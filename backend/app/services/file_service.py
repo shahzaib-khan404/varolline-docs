@@ -1,0 +1,87 @@
+"""File upload service — validation, storage, and metadata persistence."""
+
+import hashlib
+import mimetypes
+from uuid import UUID
+
+import magic
+import structlog
+from fastapi import UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.config import settings
+from app.core.exceptions import FileTooLargeError, UnsupportedFileTypeError
+from app.core.file_validator import sanitize_filename
+from app.core.storage import storage
+from app.models.file import File
+from app.repositories.file import FileRepository
+from app.schemas.file import FileCreate
+
+log = structlog.get_logger(__name__)
+
+CHUNK_SIZE = 1024 * 256  # 256 KB read chunks
+
+
+class FileService:
+    def __init__(self, session: AsyncSession):
+        self.repo = FileRepository(session)
+
+    async def upload(
+        self, upload: UploadFile, *, owner_id: UUID | None = None
+    ) -> File:
+        raw_name = (upload.filename or "upload").strip()
+        safe_name = sanitize_filename(raw_name)
+
+        # Extension allowlist (fast-fail before reading the entire file)
+        ext = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else ""
+        if ext not in settings.ALLOWED_EXTENSIONS:
+            raise UnsupportedFileTypeError(f".{ext}")
+
+        # Read file in chunks to avoid loading 100 MB into memory at once
+        chunks: list[bytes] = []
+        total = 0
+        async for chunk in self._iter_chunks(upload):
+            total += len(chunk)
+            if total > settings.max_upload_size_bytes:
+                raise FileTooLargeError(settings.MAX_UPLOAD_SIZE_MB)
+            chunks.append(chunk)
+
+        data = b"".join(chunks)
+        if not data:
+            from fastapi import HTTPException
+            raise HTTPException(400, detail="Uploaded file is empty.")
+
+        mime_type = self._detect_mime(data)
+
+        if mime_type not in settings.ALLOWED_MIME_TYPES:
+            raise UnsupportedFileTypeError(mime_type)
+
+        checksum = hashlib.sha256(data).hexdigest()
+        storage_key = await storage.save(data, safe_name, folder="originals")
+
+        file = await self.repo.create(
+            original_filename=safe_name,
+            storage_key=storage_key,
+            mime_type=mime_type,
+            size_bytes=total,
+            checksum=checksum,
+            owner_id=owner_id,
+        )
+        log.info("file_uploaded", file_id=str(file.id), size=total, mime=mime_type)
+        return file
+
+    async def get_download_url(self, file: File) -> str:
+        return storage.get_url(file.storage_key)
+
+    @staticmethod
+    def _detect_mime(data: bytes) -> str:
+        """Use libmagic to detect MIME from file contents — not extension."""
+        return magic.from_buffer(data[:2048], mime=True)
+
+    @staticmethod
+    async def _iter_chunks(upload: UploadFile):
+        while True:
+            chunk = await upload.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            yield chunk

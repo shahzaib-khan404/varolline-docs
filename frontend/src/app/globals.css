@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Background & surfaces */
+    --background: 0 0% 100%;
+    --foreground: 224 33% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 33% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 33% 12%;
+
+    /* Primary — vibrant red like ilovepdf */
+    --primary: 4 84% 54%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary / muted surfaces */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 33% 12%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 14% 94%;
+    --accent-foreground: 224 33% 12%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & inputs */
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 4 84% 54%;
+
+    /* Radius — ilovepdf uses generous rounding */
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222 47% 7%;
+    --foreground: 210 20% 96%;
+    --card: 222 47% 10%;
+    --card-foreground: 210 20% 96%;
+    --popover: 222 47% 10%;
+    --popover-foreground: 210 20% 96%;
+
+    --primary: 4 84% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 28% 18%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 220 28% 18%;
+    --muted-foreground: 218 11% 58%;
+    --accent: 220 28% 18%;
+    --accent-foreground: 210 20% 96%;
+
+    --destructive: 0 63% 40%;
+    --destructive-foreground: 210 20% 96%;
+
+    --border: 220 28% 18%;
+    --input: 220 28% 18%;
+    --ring: 4 84% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  ::selection {
+    @apply bg-primary/20;
+  }
+}
+
+@layer utilities {
+  /* Gradient text — ilovepdf uses solid primary color, keep for compat */
+  .gradient-text {
+    @apply bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent;
+  }
+
+  /* Glass morphism */
+  .glass {
+    @apply backdrop-blur-md bg-white/10 border border-white/20;
+  }
+
+  /* Skeleton */
+  .skeleton {
+    @apply animate-pulse rounded-md bg-muted;
+  }
+
+  /* Shimmer */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--muted)) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+}
