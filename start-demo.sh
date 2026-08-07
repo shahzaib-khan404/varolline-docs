@@ -3,10 +3,17 @@
 #  Varolline Docs — Demo startup script
 #
 #  Architecture (single ngrok tunnel):
-#    Browser → https://ungloved-graves-ladies.ngrok-free.dev
+#    Browser → https://<your-ngrok-domain>.ngrok-free.app
 #                  └── Next.js :3000
 #                          ├── pages/assets  (served directly)
 #                          └── /api/v1/*     (proxied → FastAPI :8001)
+#
+#  Setup before running:
+#    1. Install ngrok: https://ngrok.com/download
+#    2. Sign up at ngrok.com and get your free static domain
+#    3. Set your ngrok authtoken: ngrok config add-authtoken <YOUR_AUTHTOKEN>
+#    4. Update ngrok.yml tunnel domain to your static domain
+#    5. Replace PUBLIC_URL below with your ngrok static domain
 #
 #  Usage:  ./start-demo.sh
 # ─────────────────────────────────────────────────────────────
@@ -15,7 +22,12 @@ set -e
 
 FRONTEND_DIR="$(cd "$(dirname "$0")/frontend" && pwd)"
 BACKEND_DIR="$(cd "$(dirname "$0")/backend" && pwd)"
-PUBLIC_URL="https://ungloved-graves-ladies.ngrok-free.dev"
+
+# ── CONFIGURE THIS ────────────────────────────────────────────
+# Replace with your ngrok static domain (free at ngrok.com → Cloud Edge → Domains)
+# Example: https://your-unique-name.ngrok-free.app
+PUBLIC_URL="https://YOUR-NGROK-DOMAIN.ngrok-free.app"
+# ─────────────────────────────────────────────────────────────
 
 GREEN='\033[0;32m'; CYAN='\033[0;36m'
 YELLOW='\033[1;33m'; BOLD='\033[1m'; RESET='\033[0m'
