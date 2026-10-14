@@ -50,7 +50,7 @@ export const useAuthStore = create<AuthState>()(
       isAdmin: () => get().user?.role === "admin",
     }),
     {
-      name: "varolline-auth",
+      name: "ulovepdf-auth",
       storage: createJSONStorage(() =>
         typeof window !== "undefined"
           ? localStorage
@@ -60,10 +60,11 @@ export const useAuthStore = create<AuthState>()(
               removeItem: () => {},
             }
       ),
-      // Only persist tokens — user is re-fetched on mount
+      // Persist tokens and user profile to prevent UI flashes on refresh
       partialize: (state) => ({
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
+        user: state.user,
       }),
     }
   )

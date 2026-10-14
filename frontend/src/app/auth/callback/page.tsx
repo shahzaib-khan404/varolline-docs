@@ -57,7 +57,11 @@ function CallbackContent() {
         const user = await authApi.me();
         setUser(user);
         toast({ title: "Welcome!", description: `Signed in as ${user.email}` });
-        router.replace("/dashboard");
+        if (user.role === "admin") {
+          router.replace("/admin");
+        } else {
+          router.replace("/");
+        }
         router.refresh();
       } catch {
         toast({

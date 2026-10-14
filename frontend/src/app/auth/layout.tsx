@@ -4,8 +4,8 @@ import { FileText, Shield, Zap, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Varolline Docs",
-    default: "Sign in | Varolline Docs",
+    template: "%s | uLovepdf",
+    default: "Sign in | uLovepdf",
   },
 };
 
@@ -22,44 +22,52 @@ export default function AuthLayout({
 }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      {/* ── Left panel — decorative ─────────────────────────── */}
-      <div className="relative hidden flex-col justify-between bg-muted/30 p-10 lg:flex">
-        {/* Subtle grid background */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-        {/* Radial glow */}
-        <div className="pointer-events-none absolute bottom-0 left-0 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
+      {/* ── Left panel — decorative with hardware-accelerated video ──── */}
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-background p-10 lg:flex border-r border-border/40">
+        {/* ── High-Definition Ambient Backdrop Image ── */}
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden isolate">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/signin.jpg"
+            alt="uLovepdf Security & Processing"
+            className="absolute inset-0 h-full w-full object-cover opacity-65 dark:opacity-75 transition-opacity duration-700 scale-[1.02]"
+          />
+
+          {/* Cyber Tech Grid Overlay */}
+          <div className="bg-grid-pattern absolute inset-0 opacity-[0.2] dark:opacity-[0.1]" />
+
+          {/* Soft Vignette & Readability Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/50 to-background/95" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,hsl(var(--background))_90%)] opacity-75" />
+        </div>
 
         {/* Logo */}
-        <Link href="/" className="relative flex items-center gap-2 font-semibold">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <FileText className="h-4 w-4 text-primary-foreground" />
+        <Link href="/" className="relative z-10 flex items-center gap-2.5 font-bold group">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/25 group-hover:scale-105 transition-transform duration-300">
+            <FileText className="h-5 w-5" />
           </div>
-          <span className="text-sm">Varolline Docs</span>
+          <span className="text-base tracking-tight text-foreground font-extrabold">uLovepdf</span>
         </Link>
 
-        {/* Feature highlights */}
-        <div className="relative space-y-6">
+        {/* Feature highlights with glassmorphic cards */}
+        <div className="relative z-10 space-y-7">
           <blockquote className="space-y-3">
-            <p className="text-2xl font-bold tracking-tight leading-snug">
+            <p className="text-3xl font-black tracking-tight leading-snug text-foreground">
               Process any document.
               <br />
-              <span className="text-muted-foreground font-normal">
+              <span className="gradient-text font-extrabold">
                 Fast, free, and beautifully simple.
               </span>
             </p>
           </blockquote>
           <ul className="space-y-3">
             {FEATURE_POINTS.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-center gap-3 text-sm">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-background">
-                  <Icon className="h-4 w-4 text-primary" />
+              <li
+                key={text}
+                className="flex items-center gap-3.5 rounded-2xl border border-white/30 dark:border-white/10 bg-white/60 dark:bg-card/50 p-3.5 text-sm font-semibold backdrop-blur-xl shadow-sm text-foreground"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-400/25">
+                  <Icon className="h-4 w-4" />
                 </span>
                 {text}
               </li>
@@ -68,8 +76,8 @@ export default function AuthLayout({
         </div>
 
         {/* Footer */}
-        <p className="relative text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Varolline Docs — MIT licensed open source
+        <p className="relative z-10 text-xs font-medium text-muted-foreground">
+          © {new Date().getFullYear()} uLovepdf — MIT licensed open source
         </p>
       </div>
 
@@ -83,7 +91,7 @@ export default function AuthLayout({
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <FileText className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="text-sm">Varolline Docs</span>
+          <span className="text-sm">uLovepdf</span>
         </Link>
 
         <div className="w-full max-w-sm">{children}</div>

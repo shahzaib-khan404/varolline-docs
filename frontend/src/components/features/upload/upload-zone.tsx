@@ -7,6 +7,8 @@ import { FileItem } from "./file-item";
 import type { ToolConfig } from "@/config/tools";
 import type { UseUploadReturn } from "@/hooks/use-upload";
 
+import { CloudUploadButtons } from "./cloud-upload-buttons";
+
 interface UploadZoneProps extends UseUploadReturn {
   tool: ToolConfig;
 }
@@ -26,6 +28,12 @@ export function UploadZone({
         tool={tool}
         hasFiles={items.length > 0}
         onDrop={addFiles}
+      />
+
+      {/* Cloud Upload Providers (Google Drive & Dropbox) */}
+      <CloudUploadButtons
+        onFilesSelected={addFiles}
+        className="py-1"
       />
 
       <AnimatePresence initial={false}>

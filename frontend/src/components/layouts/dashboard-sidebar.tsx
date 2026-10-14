@@ -44,9 +44,9 @@ export function DashboardSidebar({ className }: SidebarProps) {
       )}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center gap-2.5 border-b px-3.5">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary">
-          <FileText className="h-3.5 w-3.5 text-primary-foreground" />
+      <Link href="/dashboard" className="flex h-14 items-center gap-2.5 border-b px-3.5 group">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 via-cyan-500 to-blue-600 text-white shadow-md shadow-sky-500/30 group-hover:scale-105 transition-transform">
+          <FileText className="h-4 w-4 text-white" />
         </div>
         <AnimatePresence>
           {!collapsed && (
@@ -55,13 +55,13 @@ export function DashboardSidebar({ className }: SidebarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="text-sm font-semibold whitespace-nowrap overflow-hidden"
+              className="text-sm font-extrabold tracking-tight whitespace-nowrap overflow-hidden text-foreground group-hover:text-primary transition-colors"
             >
-              Varolline Docs
+              uLove<span className="gradient-text font-black">pdf</span>
             </motion.span>
           )}
         </AnimatePresence>
-      </div>
+      </Link>
 
       {/* Main nav */}
       <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-2">

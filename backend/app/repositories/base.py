@@ -18,7 +18,12 @@ class BaseRepository(Generic[ModelT]):
         self.model = model
         self.session = session
 
-    async def get(self, id: UUID) -> ModelT | None:
+    async def get(self, id: UUID | str) -> ModelT | None:
+        if isinstance(id, str):
+            try:
+                id = UUID(id)
+            except ValueError:
+                pass
         return await self.session.get(self.model, id)
 
     async def get_by(self, **kwargs: Any) -> ModelT | None:

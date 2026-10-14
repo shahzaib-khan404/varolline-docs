@@ -27,6 +27,11 @@ yarn-error.log
 
 # ── Uploads / user data ──────────────────────────────────────────
 backend/uploads/
+*.db
+*.db-shm
+*.db-wal
+.coverage
+*.pdf
 
 # ── OS ───────────────────────────────────────────────────────────
 .DS_Store

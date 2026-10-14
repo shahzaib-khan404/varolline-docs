@@ -1,4 +1,4 @@
-"""Varolline Docs — FastAPI application entry point."""
+"""uLovepdf — FastAPI application entry point."""
 
 import structlog
 from contextlib import asynccontextmanager
@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import engine, Base
+import app.models
 from app.core.logging import configure_logging
 from app.core.middleware import (
     SecurityHeadersMiddleware,
@@ -38,10 +39,17 @@ async def lifespan(app: FastAPI):
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
-    log.info("varolline_docs_started", environment=settings.ENVIRONMENT)
+    # Ensure designated admin exists with correct credentials
+    try:
+        from app.db.init_db import init_db
+        await init_db()
+    except Exception as e:
+        log.error("init_db_failed", error=str(e))
+
+    log.info("ulovepdf_started", environment=settings.ENVIRONMENT)
     yield
 
-    log.info("varolline_docs_stopping")
+    log.info("ulovepdf_stopping")
 
 
 def create_application() -> FastAPI:

@@ -20,6 +20,22 @@ ProcessingTool = Literal[
     "watermark_pdf",
     "password_protect",
     "ocr_extraction",
+    "organize_pdf",
+    "page_numbers",
+    "unlock_pdf",
+    "crop_pdf",
+    "repair_pdf",
+    "powerpoint_to_pdf",
+    "excel_to_pdf",
+    "pdf_to_excel",
+    "html_to_pdf",
+    "pdf_to_pdfa",
+    "edit_pdf",
+    "sign_pdf",
+    "redact_pdf",
+    "pdf_forms",
+    "ocr_pdf",
+    "compare_pdf",
 ]
 
 JobStatus = Literal["pending", "processing", "completed", "failed", "cancelled"]
@@ -52,6 +68,8 @@ class JobRead(BaseModel):
     output_filename: str | None
     output_url: str | None = None  # Populated by service layer
     output_size_bytes: int | None = None
+    input_file_size_bytes: int | None = None
+    input_filename: str | None = None
     error_message: str | None
     retry_count: int
     created_at: datetime

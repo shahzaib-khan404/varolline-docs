@@ -8,7 +8,7 @@ import { RegisteredBanner } from "@/components/features/auth/registered-banner";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to your Varolline Docs account.",
+  description: "Sign in to your uLovepdf account.",
 };
 
 export default function LoginPage() {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -14,7 +15,7 @@ import type { JobStatus } from "@/types/api";
 const POLL_INTERVAL = 2000; // 2s while job is running
 
 // Strip the backend origin so file URLs go through the Next.js /uploads/* proxy.
-// This makes previews and downloads work on any public URL (ngrok, production, etc.)
+// This makes previews and downloads work seamlessly across environments
 // without needing direct access to the backend server.
 function proxiedUrl(url: string): string {
   try {
@@ -36,6 +37,8 @@ interface JobResultProps {
 }
 
 export function JobResult({ jobId, toolName, onReset }: JobResultProps) {
+  const [downloading, setDownloading] = useState(false);
+
   const { data: job } = useQuery({
     queryKey: ["job", jobId],
     queryFn: () => jobsApi.get(jobId),
@@ -47,6 +50,41 @@ export function JobResult({ jobId, toolName, onReset }: JobResultProps) {
   const isRunning = !status || shouldPoll(status);
   const isDone = status === "completed";
   const isFailed = status === "failed" || status === "cancelled";
+
+  const handleDownload = async () => {
+    if (!job?.output_url) return;
+    const base = proxiedUrl(job.output_url);
+    const downloadHref = `${base}${base.includes("?") ? "&" : "?"}download=true`;
+    let targetFilename = job.output_filename || "document.pdf";
+    if (!targetFilename.toLowerCase().endsWith(".pdf") && (toolName.includes("pdf") || base.includes(".pdf"))) {
+      targetFilename = `${targetFilename}.pdf`;
+    }
+
+    try {
+      setDownloading(true);
+      const res = await fetch(downloadHref);
+      if (!res.ok) throw new Error("Download request failed");
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = targetFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+    } catch {
+      // Direct navigation fallback
+      const a = document.createElement("a");
+      a.href = downloadHref;
+      a.download = targetFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -89,23 +127,75 @@ export function JobResult({ jobId, toolName, onReset }: JobResultProps) {
           <p className="mt-1 text-xs text-muted-foreground">{toolName} completed successfully.</p>
 
           {job?.output_size_bytes != null && (
-            <p className="mt-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              Output size: {formatBytes(job.output_size_bytes)}
+            <div className="mt-4 flex flex-col items-center">
+              {job?.input_file_size_bytes != null ? (
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 rounded-xl border border-border/50 bg-muted/30 px-4 py-2.5 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground">Original:</span>
+                    <span className="font-semibold text-foreground">
+                      {formatBytes(job.input_file_size_bytes)}
+                    </span>
+                  </div>
+
+                  <span className="text-muted-foreground/50">→</span>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground">
+                      {job.tool === "compress_pdf" ? "Compressed:" : "Output:"}
+                    </span>
+                    <span className="font-semibold text-emerald-500 dark:text-emerald-400">
+                      {formatBytes(job.output_size_bytes)}
+                    </span>
+                  </div>
+
+                  {job.input_file_size_bytes > job.output_size_bytes && (
+                    <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-500 dark:bg-emerald-500/20 dark:text-emerald-400">
+                      -{Math.round(((job.input_file_size_bytes - job.output_size_bytes) / job.input_file_size_bytes) * 100)}%
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                  Output size: {formatBytes(job.output_size_bytes)}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Output filename indicator */}
+          {job?.output_filename && (
+            <p
+              className="mt-3 truncate max-w-xs sm:max-w-md mx-auto text-xs font-medium text-muted-foreground px-2"
+              title={job.output_filename}
+            >
+              {job.output_filename}
             </p>
           )}
 
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            {job?.output_url && (
-              <Button asChild size="lg">
-                <a href={proxiedUrl(job.output_url)} download={job.output_filename ?? undefined}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download
-                  {job.output_filename ? ` "${job.output_filename}"` : ""}
-                </a>
-              </Button>
-            )}
-            <Button variant="outline" size="lg" onClick={onReset}>
-              <RotateCcw className="mr-2 h-4 w-4" />
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            {job?.output_url && (() => {
+              const targetFilename = job.output_filename || "document.pdf";
+              const ext = targetFilename.split(".").pop()?.toUpperCase() || "PDF";
+              const label = ext === "PDF" ? "Download PDF" : `Download ${ext}`;
+
+              return (
+                <Button
+                  size="lg"
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="min-w-[160px] max-w-full px-6 shadow-sm cursor-pointer"
+                >
+                  {downloading ? (
+                    <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" />
+                  ) : (
+                    <Download className="mr-2 h-4 w-4 shrink-0" />
+                  )}
+                  <span>{downloading ? "Downloading..." : label}</span>
+                </Button>
+              );
+            })()}
+            <Button variant="outline" size="lg" onClick={onReset} className="min-w-[150px]">
+              <RotateCcw className="mr-2 h-4 w-4 shrink-0" />
               Process another
             </Button>
           </div>

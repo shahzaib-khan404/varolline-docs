@@ -7,7 +7,8 @@ import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText, Sun, Moon, Menu, X, ChevronDown,
-  LayoutDashboard, LogOut, User,
+  LayoutDashboard, LogOut, User, ShieldCheck,
+  Bell, Settings, History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToolIcon } from "@/components/ui/tool-icon";
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils/cn";
 import { TOOL_CATEGORIES } from "@/config/tools";
 import { useAuthStore } from "@/store/auth-store";
 import { authApi } from "@/lib/api/auth";
+import { useCurrentUser } from "@/hooks/use-auth";
 
 const NAV_LINKS = [
   { label: "Features", href: "/#features" },
@@ -36,8 +38,10 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
 
-  const { user, accessToken, logout } = useAuthStore();
-  const isAuthenticated = Boolean(accessToken);
+  const { user: storeUser, accessToken, logout } = useAuthStore();
+  const { data: queryUser } = useCurrentUser();
+  const user = storeUser || queryUser;
+  const isAuthenticated = Boolean(accessToken || user);
 
   useEffect(() => {
     setMounted(true);
@@ -49,29 +53,41 @@ export function Navbar() {
   const handleSignOut = () => {
     authApi.logout();
     logout();
+    document.cookie = "auth_token=; path=/; max-age=0";
     router.push("/");
     router.refresh();
   };
 
-  const displayName = user?.full_name || user?.email?.split("@")[0] || "Account";
-  const initials = displayName.slice(0, 2).toUpperCase();
+  const displayName: string = user?.full_name || (user?.email ? (user.email.split("@")[0] || "Account") : "Account");
+  const initials = user?.full_name
+    ? user.full_name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
+    : displayName.slice(0, 2).toUpperCase();
 
   return (
     <header
       className={cn(
-        "fixed top-0 z-50 w-full transition-all duration-300",
+        "fixed top-0 z-50 w-full transition-all duration-300 px-4 sm:px-6 lg:px-8 pt-3",
         scrolled
-          ? "border-b border-border/60 bg-background/80 backdrop-blur-xl shadow-sm"
-          : "bg-transparent"
+          ? "pt-2"
+          : "pt-3.5"
       )}
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div
+        className={cn(
+          "mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 rounded-2xl transition-all duration-300",
+          scrolled
+            ? "border border-white/20 dark:border-white/10 bg-background/75 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/20"
+            : "border border-white/10 dark:border-white/5 bg-background/40 backdrop-blur-lg"
+        )}
+      >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <FileText className="h-4 w-4 text-primary-foreground" />
+        <Link href="/" className="flex items-center gap-2.5 font-bold tracking-tight group">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 via-cyan-500 to-blue-600 shadow-md shadow-sky-500/30 group-hover:scale-105 transition-transform">
+            <FileText className="h-4 w-4 text-white" />
           </div>
-          <span className="text-sm tracking-tight">Varolline Docs</span>
+          <span className="text-sm font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors">
+            uLove<span className="gradient-text font-black">pdf</span>
+          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -151,41 +167,80 @@ export function Navbar() {
           <div className="hidden items-center gap-2 md:flex">
             {isAuthenticated ? (
               <>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/dashboard">
-                    <LayoutDashboard className="mr-1.5 h-3.5 w-3.5" />
-                    Dashboard
-                  </Link>
-                </Button>
+                {/* Notification Bell */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground ring-2 ring-background transition-opacity hover:opacity-90">
-                      {user?.avatar_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={user.avatar_url} alt={displayName} className="h-full w-full rounded-full object-cover" />
-                      ) : (
-                        initials
-                      )}
+                    <button
+                      className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none"
+                      aria-label="Notifications"
+                    >
+                      <Bell className="h-4 w-4" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-64 p-3">
+                    <p className="text-xs font-semibold text-foreground">Notifications</p>
+                    <p className="mt-1 text-xs text-muted-foreground">You are all caught up! No unread notifications.</p>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {user?.role === "admin" && (
+                  <Button variant="outline" size="sm" asChild className="border-sky-500/40 text-primary hover:bg-sky-500/10 font-semibold shadow-sm">
+                    <Link href="/admin">
+                      <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-sky-500" />
+                      Admin Portal
+                    </Link>
+                  </Button>
+                )}
+
+                {/* Logged in User Pill (Avatar + Name) */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm font-medium transition-colors hover:bg-accent/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-sky-400 font-bold text-xs ring-1 ring-white/10 dark:ring-white/20 shadow-inner">
+                        {user?.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={user.avatar_url} alt={displayName} className="h-full w-full rounded-full object-cover" />
+                        ) : (
+                          initials
+                        )}
+                      </div>
+                      <span className="hidden sm:inline-block max-w-[140px] truncate text-sm font-semibold text-foreground">
+                        {displayName}
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
                     <div className="px-3 py-2">
-                      <p className="text-xs font-medium">{displayName}</p>
+                      <p className="text-xs font-semibold text-foreground">{displayName}</p>
                       {user?.email && (
                         <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                       )}
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-3.5 w-3.5" />
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
+                    {user?.role === "admin" && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="cursor-pointer font-medium text-primary">
+                          <ShieldCheck className="mr-2 h-3.5 w-3.5 text-primary" />
+                          Admin Portal
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="cursor-pointer">
                         <User className="mr-2 h-3.5 w-3.5" />
                         Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="cursor-pointer">
+                        <Settings className="mr-2 h-3.5 w-3.5" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/history" className="cursor-pointer">
+                        <History className="mr-2 h-3.5 w-3.5" />
+                        History
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -220,7 +275,7 @@ export function Navbar() {
             {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
         </div>
-      </nav>
+      </div>
 
       {/* Mobile drawer */}
       <AnimatePresence>
@@ -270,10 +325,30 @@ export function Navbar() {
                       </div>
                       <span className="text-sm font-medium">{displayName}</span>
                     </div>
+                    {user?.role === "admin" && (
+                      <Button variant="secondary" asChild onClick={() => setMobileOpen(false)} className="border border-sky-500/40 text-primary">
+                        <Link href="/admin">
+                          <ShieldCheck className="mr-2 h-4 w-4 text-sky-500" />
+                          Admin Portal
+                        </Link>
+                      </Button>
+                    )}
                     <Button variant="outline" asChild onClick={() => setMobileOpen(false)}>
-                      <Link href="/dashboard">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Dashboard
+                      <Link href="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        My Profile
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild onClick={() => setMobileOpen(false)}>
+                      <Link href="/settings">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Settings
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild onClick={() => setMobileOpen(false)}>
+                      <Link href="/history">
+                        <History className="mr-2 h-4 w-4" />
+                        History
                       </Link>
                     </Button>
                     <Button variant="destructive" onClick={() => { setMobileOpen(false); handleSignOut(); }}>

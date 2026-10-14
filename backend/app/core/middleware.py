@@ -49,11 +49,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
 
-        # Uploads are user-owned processed files embedded in our frontend iframe.
+        # Uploads and file download/preview endpoints are embedded in our frontend iframe.
         # X-Frame-Options: DENY would block the preview; use CSP frame-ancestors instead.
-        if request.url.path.startswith("/uploads/"):
+        if request.url.path.startswith("/uploads/") or "/files/download/" in request.url.path:
             allowed = " ".join(settings.ALLOWED_ORIGINS)
-            response.headers["Content-Security-Policy"] = f"frame-ancestors {allowed}"
+            response.headers["Content-Security-Policy"] = f"frame-ancestors 'self' {allowed}"
+            if "x-frame-options" in response.headers:
+                del response.headers["x-frame-options"]
         else:
             response.headers["X-Frame-Options"] = "DENY"
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "Privacy Policy — Varolline Docs" };
+export const metadata: Metadata = { title: "Privacy Policy — uLovepdf" };
 
 export default function PrivacyPage() {
   return (
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="mb-2 text-base font-semibold text-foreground">Contact</h2>
-          <p className="text-sm">Privacy concerns? Email <a href="mailto:privacy@varollinedocs.com" className="text-primary underline">privacy@varollinedocs.com</a></p>
+          <p className="text-sm">Privacy concerns? Email <a href="mailto:privacy@ulovepdf.com" className="text-primary underline">privacy@ulovepdf.com</a></p>
         </section>
       </div>
 

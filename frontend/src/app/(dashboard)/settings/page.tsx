@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DashboardHeader } from "@/components/layouts/dashboard-header";
 import { SettingsClient } from "./settings-client";
 
-export const metadata: Metadata = { title: "Settings — Varolline Docs" };
+export const metadata: Metadata = { title: "Settings — uLovepdf" };
 
 export default function SettingsPage() {
   return (

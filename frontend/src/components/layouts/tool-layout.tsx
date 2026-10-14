@@ -5,11 +5,13 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils/cn";
 import { ToolIcon } from "@/components/ui/tool-icon";
 import { UploadZone } from "@/components/features/upload/upload-zone";
 import { JobResult } from "@/components/features/upload/job-result";
 import { useUpload } from "@/hooks/use-upload";
 import { jobsApi } from "@/lib/api/files";
+import { AdBannerSlot } from "@/components/features/ads/ad-banner-slot";
 import type { ToolConfig } from "@/config/tools";
 import type { FileRead } from "@/types/api";
 
@@ -20,7 +22,7 @@ export interface JobPayload {
 
 export interface ToolLayoutProps {
   tool: ToolConfig;
-  children?: React.ReactNode;
+  children?: React.ReactNode | ((upload: ReturnType<typeof useUpload>) => React.ReactNode);
   /**
    * When true, collects all uploaded files as:
    *   input_file_id = files[0].id
@@ -33,7 +35,9 @@ export interface ToolLayoutProps {
    * Takes precedence over `multiFile`.
    */
   getJobOptions?: (files: FileRead[]) => JobPayload;
-  actionLabel?: string;
+  actionLabel?: React.ReactNode;
+  actionClassName?: string;
+  upload?: ReturnType<typeof useUpload>;
 }
 
 export function ToolLayout({
@@ -42,8 +46,11 @@ export function ToolLayout({
   multiFile = false,
   getJobOptions,
   actionLabel,
+  actionClassName,
+  upload: externalUpload,
 }: ToolLayoutProps) {
-  const upload = useUpload();
+  const internalUpload = useUpload();
+  const upload = externalUpload ?? internalUpload;
   const [jobId, setJobId] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -95,30 +102,44 @@ export function ToolLayout({
     !upload.items.every((it) => it.status === "uploading");
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-      {/* Back link */}
-      <Link
-        href="/tools"
-        className="mb-6 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        All tools
-      </Link>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Slot #3: Top Leaderboard (Up) */}
+      <AdBannerSlot slotNumber={3} className="mb-8" />
 
-      {/* Heading */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <span
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tool.color}`}
+      {/* Main 3-Column Layout: Left Ad #1 | Center Tool Workspace | Right Ad #2 */}
+      <div className="flex justify-center items-start gap-6 xl:gap-8 w-full">
+        {/* Slot #1: Left Skyscraper (Left) */}
+        <AdBannerSlot
+          slotNumber={1}
+          orientation="vertical"
+          className="hidden lg:flex w-[180px] xl:w-[220px] shrink-0 sticky top-24"
+        />
+
+        {/* Center: Tool Workspace */}
+        <div className="w-full max-w-2xl min-w-0 flex-1">
+          {/* Back link */}
+          <Link
+            href="/tools"
+            className="mb-6 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
-            <ToolIcon name={tool.icon} className="h-5 w-5 text-white" />
-          </span>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">{tool.name}</h1>
-            <p className="text-sm text-muted-foreground">{tool.description}</p>
+            <ArrowLeft className="h-3.5 w-3.5" />
+            All tools
+          </Link>
+
+          {/* Heading */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3">
+              <span
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tool.color}`}
+              >
+                <ToolIcon name={tool.icon} className="h-5 w-5 text-white" />
+              </span>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight">{tool.name}</h1>
+                <p className="text-sm text-muted-foreground">{tool.description}</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
       <AnimatePresence mode="wait">
         {jobId ? (
@@ -150,7 +171,7 @@ export function ToolLayout({
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden rounded-xl border bg-card p-4"
                 >
-                  {children}
+                  {typeof children === "function" ? children(upload) : children}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -178,7 +199,7 @@ export function ToolLayout({
               >
                 <Button
                     size="lg"
-                    className="w-full"
+                    className={cn("w-full", actionClassName)}
                     disabled={!canProcess}
                     onClick={handleProcess}
                   >
@@ -196,6 +217,19 @@ export function ToolLayout({
           </motion.div>
         )}
       </AnimatePresence>
+
+          {/* Slot #4: Bottom Anchor (Down) */}
+          <AdBannerSlot slotNumber={4} className="mt-8" />
+        </div>
+
+        {/* Slot #2: Right Skyscraper (Right) */}
+        <AdBannerSlot
+          slotNumber={2}
+          orientation="vertical"
+          className="hidden lg:flex w-[180px] xl:w-[220px] shrink-0 sticky top-24"
+        />
+      </div>
     </div>
   );
 }
+

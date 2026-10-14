@@ -9,9 +9,26 @@ import type { ToolConfig } from "@/config/tools";
 
 const MAX_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
 
+const MIME_EXTENSIONS_MAP: Record<string, string[]> = {
+  "application/pdf": [".pdf"],
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+  "application/msword": [".doc"],
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": [".pptx"],
+  "application/vnd.ms-powerpoint": [".ppt"],
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+  "application/vnd.ms-excel": [".xls"],
+  "text/csv": [".csv"],
+  "text/html": [".html", ".htm"],
+  "text/plain": [".txt"],
+};
+
 function buildAccept(mimeTypes: string[]): Record<string, string[]> {
   const map: Record<string, string[]> = {};
-  for (const mime of mimeTypes) map[mime] = [];
+  for (const mime of mimeTypes) {
+    map[mime] = MIME_EXTENSIONS_MAP[mime] ?? [];
+  }
   return map;
 }
 
@@ -22,6 +39,13 @@ function formatMimes(types: string[]): string {
     "image/png": "PNG",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
     "application/msword": "DOC",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "application/vnd.ms-excel": "XLS",
+    "text/csv": "CSV",
+    "text/html": "HTML",
+    "text/plain": "TXT",
   };
   return types.map((t) => labels[t] ?? t.split("/")[1]?.toUpperCase() ?? t).join(", ");
 }
@@ -85,7 +109,7 @@ export function Dropzone({ tool, hasFiles, onDrop }: DropzoneProps) {
         }
       `}
     >
-      <input {...getInputProps()} />
+      <input {...getInputProps({ id: "file-dropzone-input" })} />
 
       <AnimatePresence mode="wait">
         {isDragActive && !isDragReject ? (

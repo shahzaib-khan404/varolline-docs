@@ -1,13 +1,18 @@
 import type { NextConfig } from "next";
 
-const BACKEND_URL = process.env.BACKEND_PROXY_URL ?? "http://localhost:8001";
+const BACKEND_URL =
+  process.env.BACKEND_PROXY_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  "http://localhost:8000";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
+  turbopack: {
+    root: __dirname,
+  },
 
   // Proxy /api/v1/* and /uploads/* to FastAPI backend.
-  // In demo/ngrok mode this means a single public URL covers everything.
   async rewrites() {
     return [
       {
@@ -61,7 +66,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https:",
               "font-src 'self'",
-              "connect-src 'self' http://localhost:8001 https:",
+              "connect-src 'self' http://localhost:8000 http://localhost:8001 https:",
               "frame-src 'self' blob:",
             ].join("; "),
           },

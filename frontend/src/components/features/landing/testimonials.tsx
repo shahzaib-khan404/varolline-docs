@@ -12,7 +12,7 @@ const TESTIMONIALS = [
     avatar: "SC",
     rating: 5,
     quote:
-      "We replaced our paid PDF subscription with Varolline Docs. It handles our daily merge and compress workflow perfectly — and it's completely free.",
+      "We replaced our paid PDF subscription with uLovepdf. It handles our daily merge and compress workflow perfectly — and it's completely free.",
   },
   {
     name: "Marcus Webb",
@@ -106,7 +106,7 @@ export function Testimonials() {
             Loved by teams and individuals
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Join 200,000+ people who trust Varolline Docs for their daily
+            Join 200,000+ people who trust uLovepdf for their daily
             document workflows.
           </p>
         </div>

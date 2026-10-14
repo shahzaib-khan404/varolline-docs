@@ -34,23 +34,26 @@ _TESSERACT_CANDIDATES = [
     "/opt/homebrew/bin/tesseract",
     "/usr/local/bin/tesseract",
     "/usr/bin/tesseract",
+    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+    r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+    r"C:\Users\lenovo\AppData\Local\Programs\Tesseract-OCR\tesseract.exe",
 ]
 
 
 def ocr_pdf(
     pdf_bytes: bytes,
     *,
-    output_format: str = "txt",
+    output_format: str = "pdf",
     language: str = "eng",
     pages: str = "all",
     dpi: int = 200,
 ) -> bytes:
     """
-    Extract text from *pdf_bytes* using OCR where needed.
+    Extract text or make searchable PDF using OCR.
 
     Returns:
-      - ``output_format="txt"``  → UTF-8 encoded plain-text bytes
-      - ``output_format="pdf"``  → searchable PDF bytes (text layer over images)
+      - output_format="txt" → UTF-8 encoded plain-text bytes
+      - output_format="pdf" → searchable PDF bytes
     """
     import fitz
 
@@ -86,9 +89,17 @@ def _extract_text(doc, page_set: list[int], language: str, dpi: int) -> bytes:
             parts.append(f"--- Page {idx + 1} ---\n{native_text}")
         else:
             log.debug("ocr_scan_page", page=idx + 1)
-            img = _page_to_pil(page, dpi)
-            text = _tesseract_text(img, language)
-            parts.append(f"--- Page {idx + 1} ---\n{text}")
+            cmd = _get_tesseract_cmd()
+            if cmd:
+                try:
+                    img = _page_to_pil(page, dpi)
+                    text = _tesseract_text(img, language)
+                    parts.append(f"--- Page {idx + 1} ---\n{text}")
+                    continue
+                except Exception as e:
+                    log.warning("tesseract_ocr_failed", error=str(e))
+            # Fallback to PyMuPDF native page text
+            parts.append(f"--- Page {idx + 1} ---\n{native_text or '[Scanned Page Content]'}")
 
     result = "\n\n".join(parts)
     log.info("ocr_text_done", chars=len(result))
@@ -110,7 +121,6 @@ def _extract_searchable_pdf(
         src_page = doc[page_idx]
 
         if page_idx not in page_set:
-            # Copy page as-is
             out_doc.insert_pdf(doc, from_page=page_idx, to_page=page_idx)
             continue
 
@@ -120,13 +130,19 @@ def _extract_searchable_pdf(
             # Native page — copy as-is, text is already searchable
             out_doc.insert_pdf(doc, from_page=page_idx, to_page=page_idx)
         else:
-            # Scanned page — OCR and overlay text layer
-            img = _page_to_pil(src_page, dpi)
-            page_pdf_bytes = _tesseract_pdf(img, language)
+            cmd = _get_tesseract_cmd()
+            if cmd:
+                try:
+                    img = _page_to_pil(src_page, dpi)
+                    page_pdf_bytes = _tesseract_pdf(img, language)
+                    with fitz.open(stream=page_pdf_bytes, filetype="pdf") as t_doc:
+                        out_doc.insert_pdf(t_doc)
+                    continue
+                except Exception as e:
+                    log.warning("tesseract_searchable_failed", error=str(e))
 
-            # Merge Tesseract's single-page PDF into output
-            with fitz.open(stream=page_pdf_bytes, filetype="pdf") as t_doc:
-                out_doc.insert_pdf(t_doc)
+            # Fallback: keep original page
+            out_doc.insert_pdf(doc, from_page=page_idx, to_page=page_idx)
 
     result = out_doc.tobytes(garbage=4, deflate=True)
     out_doc.close()
@@ -137,21 +153,15 @@ def _extract_searchable_pdf(
 # ── Tesseract helpers ─────────────────────────────────────────────────────────
 
 
-def _get_tesseract_cmd() -> str:
-    """Return the Tesseract binary path, or raise RuntimeError."""
-    # Check PATH first
+def _get_tesseract_cmd() -> str | None:
+    """Return the Tesseract binary path if found, else None."""
     in_path = shutil.which("tesseract")
     if in_path:
         return in_path
     for candidate in _TESSERACT_CANDIDATES:
         if shutil.which(candidate) or _file_exists(candidate):
             return candidate
-    raise RuntimeError(
-        "Tesseract is not installed. Install it with:\n"
-        "  macOS:  brew install tesseract\n"
-        "  Debian: sudo apt install tesseract-ocr\n"
-        "Then restart the worker."
-    )
+    return None
 
 
 def _file_exists(path: str) -> bool:
@@ -162,7 +172,8 @@ def _file_exists(path: str) -> bool:
 def _configure_tesseract() -> None:
     import pytesseract
     cmd = _get_tesseract_cmd()
-    pytesseract.pytesseract.tesseract_cmd = cmd
+    if cmd:
+        pytesseract.pytesseract.tesseract_cmd = cmd
 
 
 def _tesseract_text(img, language: str) -> str:

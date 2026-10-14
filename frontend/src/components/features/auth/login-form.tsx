@@ -27,15 +27,23 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setTokens, setUser, accessToken } = useAuthStore();
+  const { setTokens, setUser, accessToken, user } = useAuthStore();
 
-  // If a valid session already exists, go straight to dashboard
+  // If a valid session already exists, route based on role
   useEffect(() => {
-    if (accessToken) {
-      const redirect = searchParams.get("redirect") ?? "/dashboard";
-      router.replace(redirect);
+    if (accessToken && user) {
+      const redirect = searchParams.get("redirect");
+      if (redirect && redirect.startsWith("/")) {
+        if (redirect.startsWith("/admin") && user.role !== "admin") {
+          router.replace("/");
+        } else {
+          router.replace(redirect);
+        }
+      } else {
+        router.replace(user.role === "admin" ? "/admin" : "/");
+      }
     }
-  }, [accessToken, router, searchParams]);
+  }, [accessToken, user, router, searchParams]);
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -53,14 +61,24 @@ export function LoginForm() {
       document.cookie = `auth_token=${tokens.access_token}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
 
       // Fetch and store user
-      const user = await authApi.me();
-      setUser(user);
+      const loggedInUser = await authApi.me();
+      setUser(loggedInUser);
 
-      toast({ title: "Welcome back!", description: `Logged in as ${user.email}` });
+      toast({ title: "Welcome back!", description: `Logged in as ${loggedInUser.email}` });
 
-      const redirect = searchParams.get("redirect") ?? "/dashboard";
-      // replace so the login page is removed from history — back button won't return here
-      router.replace(redirect);
+      const redirect = searchParams.get("redirect");
+      if (redirect && redirect.startsWith("/")) {
+        if (redirect.startsWith("/admin") && loggedInUser.role !== "admin") {
+          router.replace("/");
+        } else {
+          router.replace(redirect);
+        }
+      } else if (loggedInUser.role === "admin") {
+        router.replace("/admin");
+      } else {
+        router.replace("/");
+      }
+      router.refresh();
     } catch (err) {
       const msg =
         (err as ApiError).message ?? "Login failed. Please try again.";

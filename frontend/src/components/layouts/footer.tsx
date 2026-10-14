@@ -35,11 +35,13 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-6">
           {/* Brand */}
           <div className="col-span-2">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <FileText className="h-4 w-4 text-primary-foreground" />
+            <Link href="/" className="flex items-center gap-2.5 font-bold tracking-tight group">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 via-cyan-500 to-blue-600 text-white shadow-md shadow-sky-500/30 group-hover:scale-105 transition-transform">
+                <FileText className="h-4 w-4 text-white" />
               </div>
-              <span className="text-sm">Varolline Docs</span>
+              <span className="text-sm font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                uLove<span className="gradient-text font-black">pdf</span>
+              </span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
               Free, open-source document processing. No sign-up required for
@@ -94,7 +96,7 @@ export function Footer() {
         {/* Bottom row */}
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Varolline Docs. Open source under MIT
+            © {new Date().getFullYear()} uLovepdf. Open source under MIT
             license.
           </p>
           <p className="text-sm text-muted-foreground">

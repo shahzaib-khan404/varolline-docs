@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     )
 
     # ── Application ────────────────────────────────────────────
-    APP_NAME: str = "Varolline Docs"
+    APP_NAME: str = "uLovepdf"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     DEBUG: bool = False
     VERSION: str = "1.0.0"
@@ -75,10 +75,10 @@ class Settings(BaseSettings):
 
     # ── File Limits ────────────────────────────────────────────
     MAX_UPLOAD_SIZE_MB: int = 100
-    TEMP_FILE_TTL_HOURS: int = 24
+    TEMP_FILE_TTL_HOURS: int = 2
 
     ALLOWED_EXTENSIONS: frozenset[str] = frozenset(
-        {"pdf", "docx", "doc", "jpg", "jpeg", "png", "pptx", "xlsx"}
+        {"pdf", "docx", "doc", "jpg", "jpeg", "png", "pptx", "ppt", "xlsx", "xls", "csv", "html", "htm"}
     )
     ALLOWED_MIME_TYPES: frozenset[str] = frozenset({
         "application/pdf",
@@ -87,16 +87,22 @@ class Settings(BaseSettings):
         "image/jpeg",
         "image/png",
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.ms-powerpoint",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+        "text/csv",
+        "text/html",
     })
 
-    # ── Rate Limiting ──────────────────────────────────────────
+    # ── Rate Limiting & Concurrency ───────────────────────────
     RATE_LIMIT_REQUESTS: int = 100
     RATE_LIMIT_PERIOD: int = 60  # seconds
+    MAX_CONCURRENT_PDF_JOBS: int = 4  # Max heavy PDF tasks running simultaneously to protect CPU & RAM
 
     # ── Celery ─────────────────────────────────────────────────
     CELERY_BROKER_URL: str = ""
     CELERY_RESULT_BACKEND: str = ""
+    CELERY_TASK_ALWAYS_EAGER: bool = True
 
     # ── Monitoring ─────────────────────────────────────────────
     SENTRY_DSN: str = ""
@@ -106,16 +112,22 @@ class Settings(BaseSettings):
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
-    EMAIL_FROM: str = "noreply@varollinedocs.com"
+    EMAIL_FROM: str = "noreply@ulovepdf.com"
 
     @model_validator(mode="after")
     def set_derived_fields(self) -> "Settings":
-        # Derive Celery URLs from Redis if not explicitly set
-        if not self.CELERY_BROKER_URL:
-            self.CELERY_BROKER_URL = self.REDIS_URL
-        if not self.CELERY_RESULT_BACKEND:
-            redis_base = self.REDIS_URL.rsplit("/", 1)[0]
-            self.CELERY_RESULT_BACKEND = f"{redis_base}/1"
+        # Derive Celery URLs
+        if self.CELERY_TASK_ALWAYS_EAGER:
+            if not self.CELERY_BROKER_URL:
+                self.CELERY_BROKER_URL = "memory://"
+            if not self.CELERY_RESULT_BACKEND:
+                self.CELERY_RESULT_BACKEND = "cache+memory://"
+        else:
+            if not self.CELERY_BROKER_URL:
+                self.CELERY_BROKER_URL = self.REDIS_URL
+            if not self.CELERY_RESULT_BACKEND:
+                redis_base = self.REDIS_URL.rsplit("/", 1)[0]
+                self.CELERY_RESULT_BACKEND = f"{redis_base}/1"
         # Ensure upload directory exists
         self.LOCAL_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
         (self.LOCAL_UPLOAD_DIR / "temp").mkdir(exist_ok=True)

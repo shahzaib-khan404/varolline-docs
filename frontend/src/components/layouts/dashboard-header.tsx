@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -41,11 +41,16 @@ const NAV_MAIN = [
 
 export function DashboardHeader({ title }: { title?: string }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { data: user } = useCurrentUser();
   const logout = useLogout();
   const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -76,7 +81,11 @@ export function DashboardHeader({ title }: { title?: string }) {
             className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             aria-label="Toggle theme"
           >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {mounted ? (
+              theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />
+            ) : (
+              <div className="h-4 w-4" />
+            )}
           </button>
 
           <button
@@ -159,13 +168,15 @@ export function DashboardHeader({ title }: { title?: string }) {
               <div className="flex h-14 items-center justify-between border-b px-4">
                 <Link
                   href="/"
-                  className="flex items-center gap-2 font-semibold"
+                  className="flex items-center gap-2.5 font-bold tracking-tight group"
                   onClick={() => setDrawerOpen(false)}
                 >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-                    <FileText className="h-3.5 w-3.5 text-primary-foreground" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 via-cyan-500 to-blue-600 text-white shadow-md shadow-sky-500/30 group-hover:scale-105 transition-transform">
+                    <FileText className="h-4 w-4 text-white" />
                   </div>
-                  <span className="text-sm">Varolline Docs</span>
+                  <span className="text-sm font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                    uLove<span className="gradient-text font-black">pdf</span>
+                  </span>
                 </Link>
                 <button
                   className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { OcrClient } from "./ocr-client";
 
 export const metadata: Metadata = {
-  title: "OCR Text Extraction — Extract Text from Scanned PDF | Varolline Docs",
+  title: "OCR Text Extraction — Extract Text from Scanned PDF | uLovepdf",
   description: "Use OCR to extract text from scanned PDFs and images. Powered by Tesseract.",
 };
 

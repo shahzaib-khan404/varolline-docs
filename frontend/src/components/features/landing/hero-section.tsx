@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Zap, Lock } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Lock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToolIcon } from "@/components/ui/tool-icon";
 import { TOOLS } from "@/config/tools";
 import { cn } from "@/lib/utils/cn";
+import { AmbientVideoBackground } from "@/components/ui/ambient-video-background";
+import { HeroGlassCard } from "./hero-glass-card";
 
 const SHOWCASE_TOOLS = TOOLS.slice(0, 12);
 
@@ -15,115 +17,107 @@ const stagger = {
   show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { ease: [0.25, 0.46, 0.45, 0.94], duration: 0.55 } },
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { ease: [0.22, 1, 0.36, 1], duration: 0.6 } },
 };
 
 export function HeroSection() {
   return (
-    <section className="bg-white dark:bg-background pt-28 pb-16 sm:pt-32 sm:pb-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden pt-28 pb-20 sm:pt-36 sm:pb-28">
+      {/* ── High-Definition Looping 3D Fluid Video & Ice Blue Aurora ── */}
+      <AmbientVideoBackground />
 
-        {/* ── Headline block ────────────────────────────────────── */}
+      <div className="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+        {/* ── Headline & Hero Header ── */}
         <motion.div
           variants={stagger}
           initial="hidden"
           animate="show"
           className="mx-auto max-w-4xl text-center"
         >
-          {/* Badge */}
-          <motion.div variants={fadeUp} className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-4 py-1.5 text-xs font-semibold text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            100% Free · No account required · Open source
+          {/* Shimmering Ice Blue Badge */}
+          <motion.div variants={fadeUp} className="mb-6 inline-flex">
+            <div className="group relative inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-4 py-1.5 text-xs font-bold text-foreground backdrop-blur-xl shadow-lg shadow-sky-500/10 transition-all hover:border-sky-400/50 hover:scale-[1.02]">
+              <span className="flex h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
+              <span className="gradient-text font-black">100% Free · No Limits</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-cyan-400" />
+                12 Pro Tools
+              </span>
+            </div>
           </motion.div>
 
-          {/* H1 */}
+          {/* H1 Title with Crisp Electric Ice Cyan Gradient (no blurry drop-shadow) */}
           <motion.h1
             variants={fadeUp}
-            className="text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl lg:text-7xl xl:text-[80px]"
+            className="text-5xl font-black tracking-tight text-foreground sm:text-6xl lg:text-7xl leading-[1.08]"
           >
-            Every PDF tool
+            Every PDF Tool.
             <br />
-            <span className="text-primary">you'll ever need.</span>
+            <span className="gradient-text">
+              Crystal Precision.
+            </span>
           </motion.h1>
 
-          {/* Subtitle */}
+          {/* Subtitle with high-contrast sharp readability */}
           <motion.p
             variants={fadeUp}
-            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl"
+            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl font-medium leading-relaxed"
           >
-            Merge, split, compress, convert, rotate, watermark and more.
-            All free. No watermarks. Works on any browser.
+            Merge, split, compress, convert, rotate, and secure documents with lightning speed.
+            Clean, zero watermarks, powered by asynchronous high-performance engines.
           </motion.p>
 
-          {/* CTAs */}
-          <motion.div variants={fadeUp} className="mt-9 flex flex-wrap items-center justify-center gap-3">
+          {/* Action CTAs in Light Blue */}
+          <motion.div
+            variants={fadeUp}
+            className="mt-9 flex flex-wrap items-center justify-center gap-4"
+          >
             <Button
               size="lg"
-              className="h-12 rounded-xl px-7 text-base font-semibold shadow-md shadow-primary/20"
+              className="h-13 rounded-2xl px-8 text-base font-bold bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-600 text-white shadow-xl shadow-sky-500/25 hover:shadow-sky-500/40 hover:scale-[1.03] transition-all duration-300"
               asChild
             >
               <Link href="/#tools">
-                Browse all tools
+                Explore All 12 Tools
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="h-12 rounded-xl px-7 text-base font-semibold"
+              className="h-13 rounded-2xl px-8 text-base font-bold border-border bg-card/80 text-foreground backdrop-blur-xl hover:bg-card hover:scale-[1.02] transition-all duration-300 shadow-sm"
               asChild
             >
-              <Link href="/auth/register">Create free account</Link>
+              <Link href="/auth/register">Create Free Account</Link>
             </Button>
           </motion.div>
 
-          {/* Trust strip */}
+          {/* Trust Guarantees */}
           <motion.div
             variants={fadeUp}
-            className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
+            className="mt-9 flex flex-wrap items-center justify-center gap-8 text-xs font-semibold text-muted-foreground"
           >
             {[
-              { icon: ShieldCheck, label: "SSL encrypted" },
-              { icon: Zap,         label: "Results in seconds" },
-              { icon: Lock,        label: "Files auto-deleted" },
+              { icon: ShieldCheck, label: "AES-256 SSL Encryption" },
+              { icon: Zap,         label: "Ultra-Fast Async Processing" },
+              { icon: Lock,        label: "Auto-Deleted in 24 Hours" },
             ].map(({ icon: Icon, label }) => (
-              <span key={label} className="flex items-center gap-1.5 font-medium">
-                <Icon className="h-4 w-4 text-primary" />
+              <span key={label} className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                  <Icon className="h-3.5 w-3.5" />
+                </span>
                 {label}
               </span>
             ))}
           </motion.div>
         </motion.div>
 
-        {/* ── Tool grid ─────────────────────────────────────────── */}
-        <motion.div
-          id="tools"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55, duration: 0.65, ease: "easeOut" }}
-          className="mt-16 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6"
-        >
-          {SHOWCASE_TOOLS.map((tool, i) => (
-            <Link
-              key={tool.id}
-              href={tool.route}
-              className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-4 text-center shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-transparent"
-            >
-              <span
-                className={cn(
-                  "flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-md",
-                  tool.color
-                )}
-              >
-                <ToolIcon name={tool.icon} className="h-7 w-7" />
-              </span>
-              <span className="text-[11px] font-semibold leading-tight text-foreground">
-                {tool.name}
-              </span>
-            </Link>
-          ))}
-        </motion.div>
+        {/* ── 3D Tilt Frosted Glass Document Card (blur 2em) ── */}
+        <HeroGlassCard />
+
       </div>
     </section>
   );

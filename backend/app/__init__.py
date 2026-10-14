@@ -1,1 +1,1 @@
-"""Varolline Docs backend application."""
+"""uLovepdf backend application."""

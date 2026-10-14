@@ -9,9 +9,10 @@ import { FormatsSection } from "@/components/features/landing/formats-section";
 import { Testimonials } from "@/components/features/landing/testimonials";
 import { FAQSection } from "@/components/features/landing/faq-section";
 import { CTASection } from "@/components/features/landing/cta-section";
+import { AdBannerSlot } from "@/components/features/ads/ad-banner-slot";
 
 export const metadata: Metadata = {
-  title: "Varolline Docs — Free Online Document Processing",
+  title: "uLovepdf — Free Online Document Processing",
   description:
     "Merge, split, compress, convert PDFs and more. 12 free tools. No watermarks. No account required. Open source.",
 };
@@ -22,12 +23,30 @@ export default function HomePage() {
       <Navbar />
       <main>
         <HeroSection />
+
+        {/* Slot #5: Post-Hero Marketing Banner */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AdBannerSlot slotNumber={5} className="my-8" />
+        </div>
+
         <StatsSection />
         <ToolsGrid />
+
+        {/* Slot #6: Mid-Page Marketing Banner */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AdBannerSlot slotNumber={6} className="my-10" />
+        </div>
+
         <HowItWorks />
         <FormatsSection />
         <Testimonials />
         <FAQSection />
+
+        {/* Slot #7: Pre-Footer Marketing Banner */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AdBannerSlot slotNumber={7} className="my-10" />
+        </div>
+
         <CTASection />
       </main>
       <Footer />

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, Zap, Shield, Clock, Globe } from "lucide-react";
 
-export const metadata: Metadata = { title: "About — Varolline Docs" };
+export const metadata: Metadata = { title: "About — uLovepdf" };
 
 const VALUES = [
   { icon: Zap,    title: "Fast",    desc: "Files are processed in seconds using distributed workers." },
@@ -18,11 +18,11 @@ export default function AboutPage() {
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
           <FileText className="h-5 w-5 text-primary-foreground" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">About Varolline Docs</h1>
+        <h1 className="text-3xl font-bold tracking-tight">About uLovepdf</h1>
       </div>
 
       <p className="mb-8 text-lg text-muted-foreground leading-relaxed">
-        Varolline Docs is a free, browser-based document processing platform. We built it
+        uLovepdf is a free, browser-based document processing platform. We built it
         because working with PDFs and documents should be simple — no installs, no subscriptions,
         no privacy concerns.
       </p>

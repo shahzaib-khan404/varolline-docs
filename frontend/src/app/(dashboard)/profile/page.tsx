@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DashboardHeader } from "@/components/layouts/dashboard-header";
 import { ProfileClient } from "./profile-client";
 
-export const metadata: Metadata = { title: "Profile — Varolline Docs" };
+export const metadata: Metadata = { title: "Profile — uLovepdf" };
 
 export default function ProfilePage() {
   return (

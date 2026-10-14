@@ -26,9 +26,67 @@ import structlog
 log = structlog.get_logger(__name__)
 
 
+def _find_libreoffice() -> str | None:
+    lo = shutil.which("libreoffice") or shutil.which("soffice")
+    if lo:
+        return lo
+    candidates = [
+        r"C:\Program Files\LibreOffice\program\soffice.exe",
+        r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
+        r"C:\Program Files\LibreOffice 7\program\soffice.exe",
+        r"C:\Program Files\LibreOffice 24\program\soffice.exe",
+    ]
+    for c in candidates:
+        if os.path.isfile(c):
+            return c
+    return None
+
+
+def _windows_com_convert(docx_bytes: bytes) -> bytes:
+    import pythoncom
+    import win32com.client
+
+    pythoncom.CoInitialize()
+    try:
+        app = win32com.client.Dispatch("word.application")
+        try:
+            try:
+                app.DisplayAlerts = 0
+            except Exception:
+                pass
+            with tempfile.TemporaryDirectory() as tmp:
+                src = os.path.abspath(os.path.join(tmp, "input.docx"))
+                out = os.path.abspath(os.path.join(tmp, "output.pdf"))
+                with open(src, "wb") as f:
+                    f.write(docx_bytes)
+                doc = app.Documents.Open(src, ReadOnly=True, Visible=False)
+                # 17 = wdExportFormatPDF
+                doc.ExportAsFixedFormat(out, 17)
+                doc.Close(SaveChanges=False)
+                with open(out, "rb") as f:
+                    data = f.read()
+                log.info("word_to_pdf_com_success", size=len(data))
+                return data
+        finally:
+            try:
+                app.Quit()
+            except Exception:
+                pass
+    finally:
+        pythoncom.CoUninitialize()
+
+
 def word_to_pdf(docx_bytes: bytes) -> bytes:
     """Convert *docx_bytes* to PDF and return the PDF bytes."""
-    lo = shutil.which("libreoffice") or shutil.which("soffice")
+    # 1. On Windows, use native Word COM automation
+    if os.name == "nt":
+        try:
+            return _windows_com_convert(docx_bytes)
+        except Exception as exc:
+            log.warning("word_windows_com_failed_trying_libreoffice", error=str(exc))
+
+    # 2. Try Headless LibreOffice
+    lo = _find_libreoffice()
     if lo:
         try:
             return _libreoffice_convert(docx_bytes, lo)

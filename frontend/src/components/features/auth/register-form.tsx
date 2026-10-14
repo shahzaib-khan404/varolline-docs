@@ -20,6 +20,7 @@ import {
 import { authApi } from "@/lib/api/auth";
 import { registerSchema, type RegisterValues } from "@/lib/validations/auth";
 import { useAuthStore } from "@/store/auth-store";
+import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils/cn";
 import type { ApiError } from "@/lib/api/client";
 
@@ -59,12 +60,14 @@ function PasswordStrength({ password }: { password: string }) {
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const { accessToken } = useAuthStore();
+  const { accessToken, setTokens, setUser, user } = useAuthStore();
 
-  // Already logged in — skip straight to dashboard
+  // Already logged in — redirect to landing page (or /admin for admin)
   useEffect(() => {
-    if (accessToken) router.replace("/dashboard");
-  }, [accessToken, router]);
+    if (accessToken) {
+      router.replace(user?.role === "admin" ? "/admin" : "/");
+    }
+  }, [accessToken, user, router]);
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
@@ -86,8 +89,33 @@ export function RegisterForm() {
         password: values.password,
         full_name: values.full_name || undefined,
       });
-      // Replace register in history so back button never returns here
-      router.replace("/auth/login?registered=true");
+
+      // Automatically sign in upon registration
+      const tokens = await authApi.login({
+        email: values.email,
+        password: values.password,
+      });
+      setTokens(tokens.access_token, tokens.refresh_token);
+
+      // Set cookie for Next.js middleware
+      document.cookie = `auth_token=${tokens.access_token}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
+
+      // Fetch and store logged-in user profile
+      const loggedInUser = await authApi.me();
+      setUser(loggedInUser);
+
+      toast({
+        title: "Account created!",
+        description: `Welcome to uLovepdf, ${loggedInUser.full_name || loggedInUser.email}!`,
+      });
+
+      // Simple users land directly back on the landing page; admins on /admin
+      if (loggedInUser.role === "admin") {
+        router.replace("/admin");
+      } else {
+        router.replace("/");
+      }
+      router.refresh();
     } catch (err) {
       const msg =
         (err as ApiError).message ?? "Registration failed. Please try again.";

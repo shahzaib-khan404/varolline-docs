@@ -28,21 +28,7 @@ class Job(Base, TimestampMixin):
     celery_task_id: Mapped[str | None] = mapped_column(String(256), index=True)
 
     tool: Mapped[str] = mapped_column(
-        Enum(
-            "merge_pdf",
-            "split_pdf",
-            "compress_pdf",
-            "pdf_to_image",
-            "image_to_pdf",
-            "pdf_to_word",
-            "word_to_pdf",
-            "rotate_pdf",
-            "delete_pages",
-            "watermark_pdf",
-            "password_protect",
-            "ocr_extraction",
-            name="processing_tool",
-        ),
+        String(64),
         nullable=False,
         index=True,
     )

@@ -4,7 +4,7 @@ import { StatsCards } from "@/components/features/dashboard/stats-cards";
 import { RecentJobs } from "@/components/features/dashboard/recent-jobs";
 import { QuickTools } from "@/components/features/dashboard/quick-tools";
 
-export const metadata: Metadata = { title: "Dashboard — Varolline Docs" };
+export const metadata: Metadata = { title: "Dashboard — uLovepdf" };
 
 export default function DashboardPage() {
   return (

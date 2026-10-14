@@ -6,15 +6,14 @@
 import axios, { AxiosError, type AxiosInstance } from "axios";
 
 // Use relative base URL so API calls always go to the same origin as the page.
-// Next.js rewrites proxy /api/v1/* → FastAPI regardless of whether the page
-// is served from localhost:3000 or the ngrok public URL.
+// Next.js rewrites proxy /api/v1/* → FastAPI.
 const BASE_URL = "/api/v1";
 
 function createApiClient(): AxiosInstance {
   const client = axios.create({
     baseURL: BASE_URL,
     timeout: 30_000,
-    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "1" },
+    headers: { "Content-Type": "application/json" },
   });
 
   // Attach JWT from localStorage on every request
@@ -53,7 +52,7 @@ function createApiClient(): AxiosInstance {
             // Clear everything — tokens, Zustand persisted state, and the middleware cookie
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
-            localStorage.removeItem("varolline-auth");
+            localStorage.removeItem("ulovepdf-auth");
             document.cookie = "auth_token=; path=/; max-age=0";
             window.location.href = "/auth/login";
           }

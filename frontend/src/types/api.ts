@@ -38,7 +38,24 @@ export type ProcessingTool =
   | "delete_pages"
   | "watermark_pdf"
   | "password_protect"
-  | "ocr_extraction";
+  | "ocr_extraction"
+  | "organize_pdf"
+  | "page_numbers"
+  | "unlock_pdf"
+  | "crop_pdf"
+  | "repair_pdf"
+  | "powerpoint_to_pdf"
+  | "pdf_to_powerpoint"
+  | "excel_to_pdf"
+  | "pdf_to_excel"
+  | "html_to_pdf"
+  | "pdf_to_pdfa"
+  | "edit_pdf"
+  | "sign_pdf"
+  | "redact_pdf"
+  | "pdf_forms"
+  | "ocr_pdf"
+  | "compare_pdf";
 
 export type JobStatus =
   | "pending"
@@ -56,6 +73,8 @@ export interface JobRead {
   output_filename: string | null;
   output_url: string | null;
   output_size_bytes: number | null;
+  input_file_size_bytes?: number | null;
+  input_filename?: string | null;
   error_message: string | null;
   retry_count: number;
   created_at: string;

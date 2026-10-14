@@ -11,6 +11,14 @@ from app.core.config import settings
 def configure_logging() -> None:
     """Configure structlog for structured JSON logging in production, pretty in dev."""
 
+    # Ensure stdout and stderr handle UTF-8 safely on Windows terminals
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
     shared_processors: list[structlog.types.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,

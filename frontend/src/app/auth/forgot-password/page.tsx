@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ForgotPasswordForm } from "@/components/features/auth/forgot-password-form";
 
-export const metadata: Metadata = { title: "Reset password — Varolline Docs" };
+export const metadata: Metadata = { title: "Reset password — uLovepdf" };
 
 export default function ForgotPasswordPage() {
   return (

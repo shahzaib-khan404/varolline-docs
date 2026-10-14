@@ -3,25 +3,25 @@ version: "3.9"
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: varolline_postgres
+    container_name: ulovepdf_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-varolline}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-varolline_secret}
-      POSTGRES_DB: ${POSTGRES_DB:-varolline_docs}
+      POSTGRES_USER: ${POSTGRES_USER:-ulovepdf}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ulovepdf_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-ulovepdf_docs}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-varolline}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ulovepdf}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: varolline_redis
+    container_name: ulovepdf_redis
     restart: unless-stopped
     command: redis-server --requirepass ${REDIS_PASSWORD:-redis_secret}
     volumes:
@@ -38,10 +38,10 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: varolline_backend
+    container_name: ulovepdf_backend
     restart: unless-stopped
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-varolline}:${POSTGRES_PASSWORD:-varolline_secret}@postgres:5432/${POSTGRES_DB:-varolline_docs}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-ulovepdf}:${POSTGRES_PASSWORD:-ulovepdf_secret}@postgres:5432/${POSTGRES_DB:-ulovepdf_docs}
       - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_secret}@redis:6379/0
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production-32-chars-min}
       - ENVIRONMENT=development
@@ -65,11 +65,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: varolline_celery_worker
+    container_name: ulovepdf_celery_worker
     restart: unless-stopped
     command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=4 -Q default,pdf,images,documents
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-varolline}:${POSTGRES_PASSWORD:-varolline_secret}@postgres:5432/${POSTGRES_DB:-varolline_docs}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-ulovepdf}:${POSTGRES_PASSWORD:-ulovepdf_secret}@postgres:5432/${POSTGRES_DB:-ulovepdf_docs}
       - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_secret}@redis:6379/0
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production-32-chars-min}
       - ENVIRONMENT=development
@@ -86,11 +86,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: varolline_celery_beat
+    container_name: ulovepdf_celery_beat
     restart: unless-stopped
     command: celery -A app.workers.celery_app beat --loglevel=info --scheduler celery.beat:PersistentScheduler
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-varolline}:${POSTGRES_PASSWORD:-varolline_secret}@postgres:5432/${POSTGRES_DB:-varolline_docs}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-ulovepdf}:${POSTGRES_PASSWORD:-ulovepdf_secret}@postgres:5432/${POSTGRES_DB:-ulovepdf_docs}
       - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_secret}@redis:6379/0
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production-32-chars-min}
       - ENVIRONMENT=development
@@ -103,7 +103,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: varolline_flower
+    container_name: ulovepdf_flower
     restart: unless-stopped
     command: celery -A app.workers.celery_app flower --port=5555
     environment:
@@ -117,7 +117,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: varolline_frontend
+    container_name: ulovepdf_frontend
     restart: unless-stopped
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -130,7 +130,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: varolline_nginx
+    container_name: ulovepdf_nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -151,4 +151,4 @@ volumes:
 
 networks:
   default:
-    name: varolline_network
+    name: ulovepdf_network

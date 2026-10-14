@@ -18,6 +18,7 @@ log = structlog.get_logger(__name__)
 
 class JobService:
     def __init__(self, session: AsyncSession):
+        self.session = session
         self.job_repo = JobRepository(session)
         self.file_repo = FileRepository(session)
 
@@ -33,13 +34,25 @@ class JobService:
             options=data.options,
             status="pending",
         )
+        # Commit so the task worker/sync session can find the job record immediately
+        await self.session.commit()
 
-        # Dispatch to Celery — imported here to avoid circular import at module load
+        # Dispatch to Celery
         from app.workers.tasks import dispatch_job
-        task = dispatch_job.delay(str(job.id))
-        await self.job_repo.update(job, celery_task_id=task.id)
+        try:
+            task = dispatch_job.delay(str(job.id))
+            job.celery_task_id = getattr(task, "id", None)
+        except Exception as exc:
+            log.warning("eager_task_exception", job_id=str(job.id), error=str(exc))
 
-        log.info("job_created", job_id=str(job.id), tool=data.tool)
+        # Refresh so any eager completion changes (status, progress, output_storage_key) are reflected
+        try:
+            await self.session.refresh(job)
+            await self.session.commit()
+        except Exception:
+            pass
+
+        log.info("job_created", job_id=str(job.id), tool=data.tool, status=job.status)
         return job
 
     async def get_job(self, job_id: UUID, requesting_user: User | None) -> Job:
@@ -62,8 +75,23 @@ class JobService:
         return await self.job_repo.update(job, **update.model_dump(exclude_none=True))
 
     async def enrich_job_read(self, job: Job) -> JobRead:
-        """Adds a signed download URL to a job DTO."""
+        """Adds signed download URL and input file details to a job DTO."""
         read = JobRead.model_validate(job)
         if job.output_storage_key:
             read.output_url = storage.get_url(job.output_storage_key)
+
+        if job.input_file_id:
+            input_file = await self.file_repo.get(job.input_file_id)
+            if input_file:
+                total_input_size = input_file.size_bytes
+                additional_ids = (job.options or {}).get("additional_file_ids", [])
+                for add_id in additional_ids:
+                    try:
+                        add_f = await self.file_repo.get(UUID(str(add_id)))
+                        if add_f:
+                            total_input_size += add_f.size_bytes
+                    except Exception:
+                        pass
+                read.input_file_size_bytes = total_input_size
+                read.input_filename = input_file.original_filename
         return read

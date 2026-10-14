@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "Terms of Service — Varolline Docs" };
+export const metadata: Metadata = { title: "Terms of Service — uLovepdf" };
 
 export default function TermsPage() {
   return (
@@ -12,12 +12,12 @@ export default function TermsPage() {
       <div className="prose prose-sm dark:prose-invert max-w-none space-y-6 text-muted-foreground">
         <section>
           <h2 className="mb-2 text-base font-semibold text-foreground">1. Acceptance</h2>
-          <p>By using Varolline Docs you agree to these Terms. If you do not agree, please do not use the service.</p>
+          <p>By using uLovepdf you agree to these Terms. If you do not agree, please do not use the service.</p>
         </section>
 
         <section>
           <h2 className="mb-2 text-base font-semibold text-foreground">2. Use of the service</h2>
-          <p>You may use Varolline Docs for lawful purposes only. You must not upload files containing malware, illegal content, or content that violates the rights of others.</p>
+          <p>You may use uLovepdf for lawful purposes only. You must not upload files containing malware, illegal content, or content that violates the rights of others.</p>
         </section>
 
         <section>
@@ -27,7 +27,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="mb-2 text-base font-semibold text-foreground">4. Availability</h2>
-          <p>We provide Varolline Docs on an "as is" basis. We make no guarantees about uptime, accuracy of outputs, or fitness for a particular purpose.</p>
+          <p>We provide uLovepdf on an "as is" basis. We make no guarantees about uptime, accuracy of outputs, or fitness for a particular purpose.</p>
         </section>
 
         <section>
@@ -37,7 +37,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="mb-2 text-base font-semibold text-foreground">6. Contact</h2>
-          <p>Questions? Email us at <a href="mailto:support@varollinedocs.com" className="text-primary underline">support@varollinedocs.com</a></p>
+          <p>Questions? Email us at <a href="mailto:support@ulovepdf.com" className="text-primary underline">support@ulovepdf.com</a></p>
         </section>
       </div>
 

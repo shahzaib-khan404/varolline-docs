@@ -3,12 +3,12 @@
 import { motion } from "framer-motion";
 
 const FORMATS = [
-  { ext: "PDF", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
-  { ext: "DOCX", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
-  { ext: "JPG", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
-  { ext: "PNG", color: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400" },
-  { ext: "PPTX", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" },
-  { ext: "XLSX", color: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400" },
+  { ext: "PDF", dot: "bg-red-500" },
+  { ext: "DOCX", dot: "bg-blue-500" },
+  { ext: "JPG", dot: "bg-emerald-500" },
+  { ext: "PNG", dot: "bg-violet-500" },
+  { ext: "PPTX", dot: "bg-orange-500" },
+  { ext: "XLSX", dot: "bg-teal-500" },
 ];
 
 const FEATURES = [
@@ -42,12 +42,13 @@ export function FormatsSection() {
               Whether you&apos;re working with PDFs, Word documents, images, or
               spreadsheets — we handle them all.
             </p>
-            <div className="mt-6 flex flex-wrap gap-2.5">
+            <div className="mt-6 flex flex-wrap gap-2">
               {FORMATS.map((f) => (
                 <span
                   key={f.ext}
-                  className={`inline-flex h-10 w-16 items-center justify-center rounded-lg text-sm font-bold ${f.color}`}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-3 py-1 text-xs font-semibold text-muted-foreground select-none"
                 >
+                  <span className={`h-1.5 w-1.5 rounded-full ${f.dot}`} />
                   {f.ext}
                 </span>
               ))}

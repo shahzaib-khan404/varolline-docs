@@ -10,7 +10,7 @@ import {
 
 const FAQS = [
   {
-    q: "Is Varolline Docs really free?",
+    q: "Is uLovepdf really free?",
     a: "Yes. All 12 core tools are completely free with no usage limits, no watermarks, and no account required. We plan to offer a paid Pro plan with batch processing and API access in the future, but core tools will always remain free.",
   },
   {
@@ -31,14 +31,14 @@ const FAQS = [
   },
   {
     q: "Can I use this for commercial work?",
-    a: "Absolutely. There are no restrictions on commercial use of the free tools. Varolline Docs is MIT-licensed open source software.",
+    a: "Absolutely. There are no restrictions on commercial use of the free tools. uLovepdf is MIT-licensed open source software.",
   },
   {
     q: "Which operating system / browser do I need?",
     a: "Any modern browser on Windows, macOS, Linux, iOS, or Android works fine. No software installation is required.",
   },
   {
-    q: "Can I self-host Varolline Docs?",
+    q: "Can I self-host uLovepdf?",
     a: "Yes! The full source code is available on GitHub under the MIT license. Docker Compose files are included for easy self-hosted deployment.",
   },
 ];

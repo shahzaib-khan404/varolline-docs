@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { HistoryPageClient } from "./history-client";
 import { DashboardHeader } from "@/components/layouts/dashboard-header";
 
-export const metadata: Metadata = { title: "Job History — Varolline Docs" };
+export const metadata: Metadata = { title: "Job History — uLovepdf" };
 
 export default function HistoryPage() {
   return (

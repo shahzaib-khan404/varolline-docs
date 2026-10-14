@@ -6,13 +6,15 @@ from celery.schedules import crontab
 from app.core.config import settings
 
 celery_app = Celery(
-    "varolline_docs",
+    "ulovepdf",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     include=["app.workers.tasks"],
 )
 
 celery_app.conf.update(
+    task_always_eager=settings.CELERY_TASK_ALWAYS_EAGER,
+    task_eager_propagates=True,
     # Queue naming — must match the worker -Q flag
     task_default_queue="default",
     # Serialization

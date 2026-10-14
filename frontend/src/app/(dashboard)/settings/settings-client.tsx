@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -44,7 +44,12 @@ const THEMES = [
 ] as const;
 
 function ThemeSelector() {
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="flex gap-2">
@@ -54,7 +59,7 @@ function ThemeSelector() {
           onClick={() => setTheme(value)}
           className={cn(
             "flex flex-1 flex-col items-center gap-1.5 rounded-lg border p-3 text-xs transition-all",
-            theme === value
+            mounted && theme === value
               ? "border-primary bg-primary/5 font-medium"
               : "border-border text-muted-foreground hover:bg-accent"
           )}

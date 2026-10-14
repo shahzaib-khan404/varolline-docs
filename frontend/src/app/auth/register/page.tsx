@@ -6,7 +6,7 @@ import { OAuthButtons } from "@/components/features/auth/oauth-buttons";
 
 export const metadata: Metadata = {
   title: "Create account",
-  description: "Create a free Varolline Docs account.",
+  description: "Create a free uLovepdf account.",
 };
 
 export default function RegisterPage() {

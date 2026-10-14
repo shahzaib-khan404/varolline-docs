@@ -1,21 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import { QueryProvider } from "@/components/common/query-provider";
+import { PresenceTracker } from "@/components/common/presence-tracker";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["400", "500", "600", "700", "800"],
-});
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
-
 export const metadata: Metadata = {
   title: {
-    default: "Varolline Docs — Free Online Document Processing",
-    template: "%s | Varolline Docs",
+    default: "uLovepdf — Free Online Document Processing",
+    template: "%s | uLovepdf",
   },
   description:
     "Free, fast, and secure document processing. Merge, split, compress, convert PDFs and more — no account required.",
@@ -28,8 +21,8 @@ export const metadata: Metadata = {
     "OCR",
     "free PDF editor",
   ],
-  authors: [{ name: "Varolline Docs" }],
-  creator: "Varolline Docs",
+  authors: [{ name: "uLovepdf" }],
+  creator: "uLovepdf",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ),
@@ -37,15 +30,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "/",
-    siteName: "Varolline Docs",
-    title: "Varolline Docs — Free Online Document Processing",
+    siteName: "uLovepdf",
+    title: "uLovepdf — Free Online Document Processing",
     description:
       "Free, fast, and secure document processing. Merge, split, compress, convert PDFs and more.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Varolline Docs — Free Online Document Processing",
+    title: "uLovepdf — Free Online Document Processing",
     description:
       "Free, fast, and secure document processing. Merge, split, compress, convert PDFs and more.",
     images: ["/og-image.png"],
@@ -72,11 +65,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${jakarta.variable} ${mono.variable}`}
-    >
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider
           attribute="class"
@@ -84,7 +73,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <PresenceTracker />
+            {children}
+          </QueryProvider>
           <Toaster />
         </ThemeProvider>
       </body>
