@@ -1,0 +1,41 @@
+services:
+  # ── Backend API (FastAPI) ────────────────────────────────────
+  - type: web
+    name: varolline-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:///./ulovepdf.db
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: MAX_UPLOAD_SIZE_MB
+        value: 100
+      - key: MAX_CONCURRENT_PDF_JOBS
+        value: 4
+      - key: CELERY_TASK_ALWAYS_EAGER
+        value: "true"
+
+  # ── Frontend (Next.js) ───────────────────────────────────────
+  - type: web
+    name: varolline-frontend
+    runtime: node
+    rootDir: frontend
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: varolline-backend
+          property: host
