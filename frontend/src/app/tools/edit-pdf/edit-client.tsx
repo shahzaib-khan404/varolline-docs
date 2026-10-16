@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -136,9 +136,22 @@ export function EditPdfClient() {
   const [elements, setElements] = useState<EditorElement[]>([]);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [deletedDetectedBlocks, setDeletedDetectedBlocks] = useState<EditableTextItem[]>([]);
-    const [showOutlines, setShowOutlines] = useState<boolean>(false);
+  const [showOutlines, setShowOutlines] = useState<boolean>(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragStartPos = useRef<{ mouseX: number; mouseY: number; elemX: number; elemY: number } | null>(null);
+
+  // Resize State & Ref
+  const [resizingId, setResizingId] = useState<string | null>(null);
+  const resizeStartPos = useRef<{
+    handle: string;
+    mouseX: number;
+    mouseY: number;
+    elemX: number;
+    elemY: number;
+    elemW: number;
+    elemH: number;
+    fontSize: number;
+  } | null>(null);
 
   // Undo / Redo history
   const [history, setHistory] = useState<EditorElement[][]>([]);
@@ -364,9 +377,104 @@ export function EditPdfClient() {
     };
   };
 
+  // Resize element handlers
+  const handleResizeMouseDown = (
+    e: React.MouseEvent,
+    elem: EditorElement,
+    handle: string
+  ) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setSelectedElementId(elem.id);
+    setResizingId(elem.id);
+
+    const elemW = elem.width || (elem.type === "text" ? 160 : 100);
+    const elemH = elem.height || (elem.type === "text" ? 30 : 50);
+    const fontSize = elem.type === "text" ? (elem as EditableTextItem).fontSize : 14;
+
+    resizeStartPos.current = {
+      handle,
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      elemX: elem.x,
+      elemY: elem.y,
+      elemW,
+      elemH,
+      fontSize,
+    };
+  };
+
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    if (!draggingId || !dragStartPos.current) return;
     const scaleRatio = zoomLevel / 100;
+
+    // 1. Resizing
+    if (resizingId && resizeStartPos.current) {
+      const { handle, mouseX, mouseY, elemX, elemY, elemW, elemH, fontSize } =
+        resizeStartPos.current;
+      const deltaX = (e.clientX - mouseX) / scaleRatio;
+      const deltaY = (e.clientY - mouseY) / scaleRatio;
+
+      let newX = elemX;
+      let newY = elemY;
+      let newW = elemW;
+      let newH = elemH;
+
+      if (handle.includes("e")) {
+        newW = Math.max(30, elemW + deltaX);
+      }
+      if (handle.includes("w")) {
+        const potentialW = elemW - deltaX;
+        if (potentialW >= 30) {
+          newW = potentialW;
+          newX = elemX + deltaX;
+        } else {
+          newW = 30;
+          newX = elemX + (elemW - 30);
+        }
+      }
+      if (handle.includes("s")) {
+        newH = Math.max(16, elemH + deltaY);
+      }
+      if (handle.includes("n")) {
+        const potentialH = elemH - deltaY;
+        if (potentialH >= 16) {
+          newH = potentialH;
+          newY = elemY + deltaY;
+        } else {
+          newH = 16;
+          newY = elemY + (elemH - 16);
+        }
+      }
+
+      // For corner handles (se, sw, ne, nw), proportionally scale the text font size (zoom in / zoom out text)
+      const isCorner = ["se", "sw", "ne", "nw"].includes(handle);
+      let newFontSize = fontSize;
+      if (isCorner) {
+        const ratio = newW / elemW;
+        newFontSize = Math.min(96, Math.max(8, Math.round(fontSize * ratio)));
+      }
+
+      setElements((prev) =>
+        prev.map((el) => {
+          if (el.id === resizingId) {
+            return {
+              ...el,
+              x: Math.round(newX),
+              y: Math.round(newY),
+              width: Math.round(newW),
+              height: Math.round(newH),
+              ...(el.type === "text" ? { fontSize: newFontSize } : {}),
+              isModified: true,
+            };
+          }
+          return el;
+        })
+      );
+      return;
+    }
+
+    // 2. Dragging
+    if (!draggingId || !dragStartPos.current) return;
     const deltaX = (e.clientX - dragStartPos.current.mouseX) / scaleRatio;
     const deltaY = (e.clientY - dragStartPos.current.mouseY) / scaleRatio;
 
@@ -389,6 +497,11 @@ export function EditPdfClient() {
   };
 
   const handleCanvasMouseUp = () => {
+    if (resizingId) {
+      setResizingId(null);
+      resizeStartPos.current = null;
+      pushHistory(elements);
+    }
     if (draggingId) {
       setDraggingId(null);
       dragStartPos.current = null;
@@ -929,16 +1042,88 @@ export function EditPdfClient() {
                         : "border border-transparent hover:border-sky-400/60 bg-transparent p-1 rounded cursor-move"
                     )}
                   >
-                    {/* Corner handle dots when selected (iLovePDF Style) */}
+                    {/* Corner & edge handle dots when selected (iLovePDF Style) */}
                     {isSelected && (
                       <>
-                        <div className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm pointer-events-none" />
-                        <div className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm pointer-events-none" />
-                        <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm pointer-events-none" />
-                        <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm pointer-events-none" />
-                        {/* Selected Tag / Delete Button */}
+                        {/* 8 Resizing Handles (Zoom In / Zoom Out Size) */}
+                        {/* NW */}
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "nw")}
+                          className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-nwse-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize (Zoom in / out)"
+                        />
+                        {/* N */}
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "n")}
+                          className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-ns-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize Height"
+                        />
+                        {/* NE */}
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "ne")}
+                          className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-nesw-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize (Zoom in / out)"
+                        />
+                        {/* E */}
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "e")}
+                          className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-ew-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize Width"
+                        />
+                        {/* SE */}
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "se")}
+                          className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-nwse-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize (Zoom in / out)"
+                        />
+                        {/* S */}
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "s")}
+                          className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-ns-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize Height"
+                        />
+                        {/* SW */}
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "sw")}
+                          className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-nesw-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize (Zoom in / out)"
+                        />
+                        {/* W */}
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "w")}
+                          className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-ew-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize Width"
+                        />
+
+                        {/* Selected Tag / Controls & Delete Button */}
                         <div className="absolute -top-7 left-0 flex items-center gap-1.5 bg-slate-900 text-white text-[10px] px-2 py-0.5 rounded shadow-lg pointer-events-auto">
-                          <span className="font-semibold">Text block</span>
+                          <span className="font-semibold">Text: {textElem.fontSize}pt</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateSelectedElement({
+                                fontSize: Math.max(8, textElem.fontSize - 2),
+                              });
+                            }}
+                            className="px-1 py-0.2 bg-white/20 rounded hover:bg-white/30 text-white font-bold"
+                            title="Smaller font size"
+                          >
+                            -
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateSelectedElement({
+                                fontSize: Math.min(96, textElem.fontSize + 2),
+                              });
+                            }}
+                            className="px-1 py-0.2 bg-white/20 rounded hover:bg-white/30 text-white font-bold"
+                            title="Bigger font size"
+                          >
+                            +
+                          </button>
                           <button
                             type="button"
                             onClick={(e) => {
@@ -1052,10 +1237,39 @@ export function EditPdfClient() {
                       backgroundColor: fillColor,
                     }}
                     className={cn(
-                      "border-2 rounded cursor-move transition-all",
+                      "border-2 rounded cursor-move transition-all relative",
                       isSelected ? "ring-2 ring-sky-500 shadow-lg" : "hover:ring-1 hover:ring-sky-400"
                     )}
-                  />
+                  >
+                    {isSelected && (
+                      <>
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "se")}
+                          className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-nwse-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize shape"
+                        />
+                        <div
+                          onMouseDown={(e) => handleResizeMouseDown(e, elem, "nw")}
+                          className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-sky-600 rounded-sm shadow-sm cursor-nwse-resize hover:scale-125 z-40 transition-transform"
+                          title="Resize shape"
+                        />
+                        <div className="absolute -top-7 left-0 flex items-center gap-1.5 bg-slate-900 text-white text-[10px] px-2 py-0.5 rounded shadow-lg pointer-events-auto">
+                          <span className="font-semibold">Shape</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteElement(elem.id);
+                            }}
+                            className="ml-1 text-rose-300 hover:text-white"
+                            title="Delete shape"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 );
               }
 
@@ -1184,11 +1398,43 @@ export function EditPdfClient() {
                 </select>
               </div>
 
-              {/* Font Size Dropdown */}
+              {/* Font Size Dropdown with Quick Steppers */}
               <div className="col-span-5">
-                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">
-                  Size
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-semibold text-muted-foreground block">
+                    Size
+                  </label>
+                  {selectedElement?.type === "text" && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const t = selectedElement as EditableTextItem;
+                          updateSelectedElement({
+                            fontSize: Math.max(8, t.fontSize - 1),
+                          });
+                        }}
+                        className="w-4 h-4 flex items-center justify-center rounded bg-secondary/60 hover:bg-secondary text-[11px] font-bold text-foreground"
+                        title="Zoom out size (-1pt)"
+                      >
+                        -
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const t = selectedElement as EditableTextItem;
+                          updateSelectedElement({
+                            fontSize: Math.min(96, t.fontSize + 1),
+                          });
+                        }}
+                        className="w-4 h-4 flex items-center justify-center rounded bg-secondary/60 hover:bg-secondary text-[11px] font-bold text-foreground"
+                        title="Zoom in size (+1pt)"
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <select
                   value={
                     selectedElement?.type === "text"
