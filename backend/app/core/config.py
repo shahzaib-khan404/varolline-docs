@@ -1,4 +1,4 @@
-"""Application configuration — single source of truth for all settings."""
+﻿"""Application configuration â€” single source of truth for all settings."""
 
 from functools import lru_cache
 from pathlib import Path
@@ -16,29 +16,29 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # ── Application ────────────────────────────────────────────
+    # â”€â”€ Application â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     APP_NAME: str = "uLovepdf"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     DEBUG: bool = False
     VERSION: str = "1.0.0"
 
-    # ── Security ───────────────────────────────────────────────
+    # â”€â”€ Security â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     SECRET_KEY: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30  # 30 days session persistence
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     ALGORITHM: str = "HS256"
 
-    # ── Database ───────────────────────────────────────────────
+    # â”€â”€ Database â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     DATABASE_URL: str
     DATABASE_URL_SYNC: str = ""
     DB_POOL_SIZE: int = 10
     DB_MAX_OVERFLOW: int = 20
     DB_POOL_TIMEOUT: int = 30
 
-    # ── Redis ──────────────────────────────────────────────────
+    # â”€â”€ Redis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # ── CORS ───────────────────────────────────────────────────
+    # â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     ALLOWED_ORIGINS: list[str] = ["http://localhost:3000"]
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
@@ -48,18 +48,18 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in v.split(",")]
         return v
 
-    # ── URLs ───────────────────────────────────────────────────
+    # â”€â”€ URLs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     BACKEND_URL: str = "http://localhost:8000"
     FRONTEND_URL: str = "http://localhost:3000"
 
-    # ── OAuth ──────────────────────────────────────────────────
+    # â”€â”€ OAuth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
     OAUTH_STATE_MAX_AGE: int = 600  # 10 minutes
 
-    # ── Storage ────────────────────────────────────────────────
+    # â”€â”€ Storage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     STORAGE_BACKEND: Literal["local", "s3", "r2"] = "local"
     LOCAL_UPLOAD_DIR: Path = Path("./uploads")
 
@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     R2_BUCKET: str = ""
     R2_ENDPOINT: str = ""
 
-    # ── File Limits ────────────────────────────────────────────
+    # â”€â”€ File Limits â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     MAX_UPLOAD_SIZE_MB: int = 100
     TEMP_FILE_TTL_HOURS: int = 2
 
@@ -94,20 +94,20 @@ class Settings(BaseSettings):
         "text/html",
     })
 
-    # ── Rate Limiting & Concurrency ───────────────────────────
+    # â”€â”€ Rate Limiting & Concurrency â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     RATE_LIMIT_REQUESTS: int = 100
     RATE_LIMIT_PERIOD: int = 60  # seconds
     MAX_CONCURRENT_PDF_JOBS: int = 4  # Max heavy PDF tasks running simultaneously to protect CPU & RAM
 
-    # ── Celery ─────────────────────────────────────────────────
+    # â”€â”€ Celery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     CELERY_BROKER_URL: str = ""
     CELERY_RESULT_BACKEND: str = ""
     CELERY_TASK_ALWAYS_EAGER: bool = True
 
-    # ── Monitoring ─────────────────────────────────────────────
+    # â”€â”€ Monitoring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     SENTRY_DSN: str = ""
 
-    # ── Email ──────────────────────────────────────────────────
+    # â”€â”€ Email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
@@ -128,6 +128,11 @@ class Settings(BaseSettings):
             if not self.CELERY_RESULT_BACKEND:
                 redis_base = self.REDIS_URL.rsplit("/", 1)[0]
                 self.CELERY_RESULT_BACKEND = f"{redis_base}/1"
+                # Automatically normalize PostgreSQL URL provided by Render to asyncpg
+        if self.DATABASE_URL.startswith("postgres://"):
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif self.DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in self.DATABASE_URL:
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
         # Ensure upload directory exists
         self.LOCAL_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
         (self.LOCAL_UPLOAD_DIR / "temp").mkdir(exist_ok=True)
@@ -154,3 +159,4 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
+
