@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -136,7 +136,9 @@ export function EditPdfClient() {
   const [elements, setElements] = useState<EditorElement[]>([]);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [deletedDetectedBlocks, setDeletedDetectedBlocks] = useState<EditableTextItem[]>([]);
-  const [showOutlines, setShowOutlines] = useState<boolean>(true);
+    const [showOutlines, setShowOutlines] = useState<boolean>(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const dragStartPos = useRef<{ mouseX: number; mouseY: number; elemX: number; elemY: number } | null>(null);
 
   // Undo / Redo history
   const [history, setHistory] = useState<EditorElement[][]>([]);
@@ -344,6 +346,56 @@ export function EditPdfClient() {
     pushHistory(nextElements);
   };
 
+  // Drag and Drop element moving handlers
+  const handleElementMouseDown = (e: React.MouseEvent, elem: EditorElement) => {
+    // If clicking inside the active editing textarea, allow text selection instead of dragging
+    const target = e.target as HTMLElement;
+    if (target.tagName.toLowerCase() === "textarea" || target.tagName.toLowerCase() === "input" || target.closest("button")) {
+      return;
+    }
+    e.stopPropagation();
+    setSelectedElementId(elem.id);
+    setDraggingId(elem.id);
+    dragStartPos.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      elemX: elem.x,
+      elemY: elem.y,
+    };
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    if (!draggingId || !dragStartPos.current) return;
+    const scaleRatio = zoomLevel / 100;
+    const deltaX = (e.clientX - dragStartPos.current.mouseX) / scaleRatio;
+    const deltaY = (e.clientY - dragStartPos.current.mouseY) / scaleRatio;
+
+    const newX = Math.max(0, Math.round(dragStartPos.current.elemX + deltaX));
+    const newY = Math.max(0, Math.round(dragStartPos.current.elemY + deltaY));
+
+    setElements((prev) =>
+      prev.map((el) => {
+        if (el.id === draggingId) {
+          return {
+            ...el,
+            x: newX,
+            y: newY,
+            isModified: true,
+          };
+        }
+        return el;
+      })
+    );
+  };
+
+  const handleCanvasMouseUp = () => {
+    if (draggingId) {
+      setDraggingId(null);
+      dragStartPos.current = null;
+      pushHistory(elements);
+    }
+  };
+
   // Canvas click to place text if activeTool === "text"
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeTool !== "text") return;
@@ -506,7 +558,7 @@ export function EditPdfClient() {
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col select-none">
-      {/* ── TOP EDIT TOOLBAR (iLovePDF Style) ── */}
+      {/* â”€â”€ TOP EDIT TOOLBAR (iLovePDF Style) â”€â”€ */}
       <header className="h-16 border-b border-border/80 bg-card px-4 sm:px-6 flex items-center justify-between shadow-sm sticky top-0 z-40">
         {/* Left: Exit Link & Annotate/Edit Pill Toggle */}
         <div className="flex items-center gap-4">
@@ -680,9 +732,9 @@ export function EditPdfClient() {
         </div>
       </header>
 
-      {/* ── 3-COLUMN STUDIO LAYOUT ── */}
+      {/* â”€â”€ 3-COLUMN STUDIO LAYOUT â”€â”€ */}
       <div className="flex-1 flex overflow-hidden">
-        {/* ── COLUMN 1: LEFT SIDEBAR (Thumbnails & Zoom Slider) ── */}
+        {/* â”€â”€ COLUMN 1: LEFT SIDEBAR (Thumbnails & Zoom Slider) â”€â”€ */}
         <aside className="w-56 border-r border-border/80 bg-card flex flex-col shadow-sm hidden md:flex shrink-0">
           {/* Top Tabs */}
           <div className="flex items-center justify-between p-3 border-b border-border/60 text-xs font-semibold text-muted-foreground">
@@ -746,7 +798,7 @@ export function EditPdfClient() {
           </div>
         </aside>
 
-        {/* ── COLUMN 2: CENTER DOCUMENT CANVAS ── */}
+        {/* â”€â”€ COLUMN 2: CENTER DOCUMENT CANVAS â”€â”€ */}
         <main
           ref={canvasContainerRef}
           className="flex-1 overflow-auto bg-slate-200/70 dark:bg-slate-900/50 p-6 flex flex-col items-center justify-start relative"
@@ -801,7 +853,7 @@ export function EditPdfClient() {
           {/* Active PDF Page Canvas Card */}
           <div
             onClick={handleCanvasClick}
-            className="relative rounded-lg bg-white shadow-2xl border border-slate-300 overflow-hidden select-none transition-transform duration-150 origin-top"
+            className="relative rounded-lg bg-white shadow-2xl border border-slate-300 overflow-hidden select-none transition-transform duration-150 origin-top" onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUp} onMouseLeave={handleCanvasMouseUp}
             style={{
               width: `${(pageWidthPt * zoomLevel) / 100}px`,
               height: `${(pageHeightPt * zoomLevel) / 100}px`,
@@ -850,6 +902,7 @@ export function EditPdfClient() {
                   <div
                     key={elem.id}
                     data-editor-item="true"
+                    onMouseDown={(e) => handleElementMouseDown(e, elem)}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedElementId(elem.id);
@@ -865,15 +918,15 @@ export function EditPdfClient() {
                     className={cn(
                       "group/elem absolute transition-all select-none box-border",
                       isSelected
-                        ? "ring-2 ring-sky-500 border-2 border-dashed border-sky-600 bg-white/95 shadow-xl p-1 rounded z-30"
+                        ? "ring-2 ring-sky-500 border border-sky-600 bg-white/95 shadow-xl p-1 rounded z-30 cursor-move"
                         : isDetectedUnedited
                         ? cn(
                             "rounded cursor-pointer transition-colors",
                             showOutlines
-                              ? "border-2 border-dashed border-sky-400/80 bg-sky-400/5 hover:border-sky-600 hover:bg-sky-400/20 hover:shadow-md"
-                              : "border-2 border-transparent hover:border-dashed hover:border-sky-400/70 hover:bg-sky-400/10"
+                              ? "border border-dashed border-sky-400/50 bg-sky-400/5 hover:border-sky-500 hover:bg-sky-400/15"
+                              : "border border-transparent hover:border-sky-400/40 hover:bg-sky-400/10"
                           )
-                        : "border border-dashed border-sky-400/80 bg-white shadow-sm p-1 rounded cursor-pointer hover:border-sky-600"
+                        : "border border-transparent hover:border-sky-400/60 bg-transparent p-1 rounded cursor-move"
                     )}
                   >
                     {/* Corner handle dots when selected (iLovePDF Style) */}
@@ -984,6 +1037,7 @@ export function EditPdfClient() {
                   <div
                     key={elem.id}
                     data-editor-item="true"
+                    onMouseDown={(e) => handleElementMouseDown(e, elem)}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedElementId(elem.id);
@@ -1075,7 +1129,7 @@ export function EditPdfClient() {
           </div>
         </main>
 
-        {/* ── COLUMN 3: RIGHT SIDEBAR (Text Styles Toolbar) ── */}
+        {/* â”€â”€ COLUMN 3: RIGHT SIDEBAR (Text Styles Toolbar) â”€â”€ */}
         <aside className="w-80 border-l border-border/80 bg-card p-5 flex flex-col justify-between shadow-sm shrink-0 overflow-y-auto">
           <div className="space-y-5">
             <h3 className="text-sm font-bold text-foreground border-b border-border/40 pb-3 flex items-center justify-between">
@@ -1374,11 +1428,11 @@ export function EditPdfClient() {
               {processing || upload.isUploading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {upload.isUploading ? "Uploading file…" : "Saving changes…"}
+                  {upload.isUploading ? "Uploading fileâ€¦" : "Saving changesâ€¦"}
                 </>
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  Save changes <span className="text-base">➔</span>
+                  Save changes <span className="text-base">âž”</span>
                 </span>
               )}
             </Button>
@@ -1388,3 +1442,6 @@ export function EditPdfClient() {
     </div>
   );
 }
+
+
+
