@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,11 +6,10 @@ import {
   X,
   Link as LinkIcon,
   HardDrive,
-  FileText,
   Loader2,
-  CheckCircle2,
   AlertCircle,
   ExternalLink,
+  ShieldAlert,
 } from "lucide-react";
 import { filesApi } from "@/lib/api/files";
 
@@ -22,63 +21,6 @@ interface CloudPickerModalProps {
   provider: CloudProvider;
   onFilesSelected: (files: File[]) => void;
 }
-
-// Generate valid multi-page PDF binary in client
-function createValidPdf(title: string, pageCount = 3): File {
-  let content = "%PDF-1.4\n";
-  const offsets: number[] = [];
-
-  offsets.push(content.length);
-  content += "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
-
-  const kids: string[] = [];
-  for (let i = 0; i < pageCount; i++) {
-    kids.push(`${3 + i * 2} 0 R`);
-  }
-
-  offsets.push(content.length);
-  content += `2 0 obj\n<< /Type /Pages /Kids [${kids.join(" ")}] /Count ${pageCount} >>\nendobj\n`;
-
-  for (let i = 0; i < pageCount; i++) {
-    const pageObjNum = 3 + i * 2;
-    const contentObjNum = pageObjNum + 1;
-
-    offsets.push(content.length);
-    content += `${pageObjNum} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents ${contentObjNum} 0 R /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> >>\nendobj\n`;
-
-    const stream = `BT /F1 24 Tf 60 770 Td (${title} - Page ${i + 1}) Tj ET\nBT /F1 13 Tf 60 730 Td (Imported successfully from Cloud Storage) Tj ET\nBT /F1 11 Tf 60 700 Td (Ready for organizing, rotating, reordering or merging) Tj ET`;
-    offsets.push(content.length);
-    content += `${contentObjNum} 0 obj\n<< /Length ${stream.length} >>\nstream\n${stream}\nendstream\nendobj\n`;
-  }
-
-  const xrefOffset = content.length;
-  const totalObjs = 2 + pageCount * 2;
-  content += `xref\n0 ${totalObjs + 1}\n0000000000 65535 f \n`;
-  for (const off of offsets) {
-    content += `${String(off).padStart(10, "0")} 00000 n \n`;
-  }
-  content += `trailer\n<< /Size ${totalObjs + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
-
-  const blob = new Blob([content], { type: "application/pdf" });
-  return new File([blob], `${title.replace(/\s+/g, "_")}.pdf`, {
-    type: "application/pdf",
-    lastModified: Date.now(),
-  });
-}
-
-// Sample Cloud Files to choose from immediately
-const SAMPLE_FILES: Record<CloudProvider, Array<{ name: string; size: string; pages: number; date: string }>> = {
-  google_drive: [
-    { name: "Annual_Report_2026.pdf", size: "1.2 MB", pages: 4, date: "Yesterday" },
-    { name: "Quarterly_Financial_Review.pdf", size: "840 KB", pages: 3, date: "Oct 10, 2026" },
-    { name: "Client_Presentation_Deck.pdf", size: "2.1 MB", pages: 5, date: "Oct 08, 2026" },
-  ],
-  dropbox: [
-    { name: "Contract_Agreement_Signed.pdf", size: "450 KB", pages: 2, date: "Today" },
-    { name: "Marketing_Campaign_Brief.pdf", size: "1.8 MB", pages: 3, date: "Oct 11, 2026" },
-    { name: "Product_Catalog_2026.pdf", size: "3.2 MB", pages: 6, date: "Oct 05, 2026" },
-  ],
-};
 
 export function CloudPickerModal({
   isOpen,
@@ -107,7 +49,7 @@ export function CloudPickerModal({
     try {
       // Import file via backend URL upload
       const fileData = await filesApi.uploadFromUrl(url.trim());
-      
+
       // Fetch the binary stream from backend URL and instantiate local File object
       const resp = await fetch(fileData.url);
       if (!resp.ok) {
@@ -132,16 +74,6 @@ export function CloudPickerModal({
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSelectSample = (sample: { name: string; pages: number }) => {
-    setLoading(true);
-    setTimeout(() => {
-      const generated = createValidPdf(sample.name.replace(".pdf", ""), sample.pages);
-      onFilesSelected([generated]);
-      setLoading(false);
-      onClose();
-    }, 400);
   };
 
   if (!isOpen) return null;
@@ -252,7 +184,7 @@ export function CloudPickerModal({
                   {loading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Fetching & Importing PDF…</span>
+                      <span>Fetching & Importing PDF...</span>
                     </>
                   ) : (
                     <>
@@ -263,49 +195,28 @@ export function CloudPickerModal({
                 </button>
               </form>
             ) : (
-              <div className="space-y-2.5">
-                <p className="text-xs text-muted-foreground">
-                  Select a document from your connected {title} cloud library:
-                </p>
-
-                <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
-                  {SAMPLE_FILES[provider].map((item) => (
-                    <div
-                      key={item.name}
-                      onClick={() => !loading && handleSelectSample(item)}
-                      className="group flex items-center justify-between rounded-xl border border-border/70 bg-card p-3 hover:border-primary/60 hover:bg-muted/40 transition-all cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <FileText className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
-                            {item.name}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {item.pages} pages • {item.size} • {item.date}
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        disabled={loading}
-                        className="rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-primary hover:text-primary-foreground group-hover:border-primary transition-colors"
-                      >
-                        Select
-                      </button>
-                    </div>
-                  ))}
+              <div className="py-6 px-4 text-center space-y-3 rounded-xl border border-dashed border-border/80 bg-card/50">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <ShieldAlert className="h-6 w-6" />
                 </div>
-
-                {loading && (
-                  <div className="flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    <span>Loading document into canvas…</span>
-                  </div>
-                )}
+                <div className="space-y-1">
+                  <h4 className="text-xs font-semibold text-foreground">
+                    Direct Cloud Library Access Not Connected
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                    Direct directory browsing requires Google Drive Picker API permissions. Please use the <strong>Share Link Import</strong> tab to paste your document link directly.
+                  </p>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("link")}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                  >
+                    <LinkIcon className="h-3 w-3" />
+                    <span>Go to Share Link Import</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
