@@ -1,0 +1,22 @@
+﻿name: Keep Backend Alive
+
+on:
+  schedule:
+    # Runs every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend Health Endpoint
+        run: |
+          echo "Pinging Backend Health at $(date)..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://ulovepdfbackendp.onrender.com/api/v1/health")
+          echo "Render Backend responded with HTTP $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 500 ]; then
+            echo "Backend is alive and awake!"
+          else
+            echo "Backend ping returned status: $HTTP_STATUS"
+          fi
