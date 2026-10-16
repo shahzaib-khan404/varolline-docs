@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+﻿import type { NextConfig } from "next";
 
 const BACKEND_URL =
   process.env.BACKEND_PROXY_URL ??
@@ -63,9 +63,9 @@ const nextConfig: NextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-              "style-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https:",
-              "font-src 'self'",
+              "font-src 'self' https://fonts.gstatic.com data:",
               "connect-src 'self' http://localhost:8000 http://localhost:8001 https:",
               "frame-src 'self' blob:",
             ].join("; "),
@@ -82,3 +82,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

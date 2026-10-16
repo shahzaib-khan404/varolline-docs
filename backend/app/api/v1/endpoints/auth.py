@@ -1,13 +1,13 @@
-"""
+﻿"""
 Authentication endpoints.
 - Email/password register, login, token refresh
 - Google OAuth 2.0 (authorization code flow)
 - GitHub OAuth (authorization code flow)
 
 OAuth flow:
-  1. GET /auth/google          → redirect to provider with signed state cookie
-  2. Provider redirects back   → GET /auth/google/callback?code=…&state=…
-  3. Backend exchanges code    → creates/finds user → issues JWT → redirects to frontend
+  1. GET /auth/google          â†’ redirect to provider with signed state cookie
+  2. Provider redirects back   â†’ GET /auth/google/callback?code=â€¦&state=â€¦
+  3. Backend exchanges code    â†’ creates/finds user â†’ issues JWT â†’ redirects to frontend
 """
 
 import hashlib
@@ -33,7 +33,7 @@ log = structlog.get_logger(__name__)
 router = APIRouter()
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _sign_state(nonce: str) -> str:
     """HMAC-SHA256 sign a state nonce so we can verify it on callback."""
@@ -69,7 +69,7 @@ def _frontend_redirect(tokens: TokenPair, error: str | None = None) -> RedirectR
     return RedirectResponse(f"{settings.FRONTEND_URL}/auth/callback?{params}")
 
 
-# ── Email / Password ──────────────────────────────────────────────────────────
+# â”€â”€ Email / Password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.post("/register", response_model=UserRead, status_code=201)
 async def register(data: UserCreate, db: DB):
@@ -93,7 +93,7 @@ async def refresh_tokens(data: RefreshRequest, db: DB):
     return await service.refresh(data.refresh_token)
 
 
-# ── Google OAuth ──────────────────────────────────────────────────────────────
+# â”€â”€ Google OAuth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/google", include_in_schema=False)
 async def google_login():
@@ -118,8 +118,8 @@ async def google_login():
         "oauth_state",
         state,
         httponly=True,
-        secure=settings.is_production,
-        samesite="lax",
+        secure=True,
+        samesite="none",
         max_age=settings.OAUTH_STATE_MAX_AGE,
     )
     return response
@@ -137,7 +137,7 @@ async def google_callback(
     if error or not code:
         return _frontend_redirect(None, error="google_denied")  # type: ignore[arg-type]
 
-    if not state or not oauth_state or state != oauth_state or not _verify_state(state):
+    if not state or not _verify_state(state):
         return _frontend_redirect(None, error="invalid_state")  # type: ignore[arg-type]
 
     async with httpx.AsyncClient() as client:
@@ -183,7 +183,7 @@ async def google_callback(
     return response
 
 
-# ── GitHub OAuth ──────────────────────────────────────────────────────────────
+# â”€â”€ GitHub OAuth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/github", include_in_schema=False)
 async def github_login():
@@ -205,8 +205,8 @@ async def github_login():
         "oauth_state",
         state,
         httponly=True,
-        secure=settings.is_production,
-        samesite="lax",
+        secure=True,
+        samesite="none",
         max_age=settings.OAUTH_STATE_MAX_AGE,
     )
     return response
@@ -224,7 +224,7 @@ async def github_callback(
     if error or not code:
         return _frontend_redirect(None, error="github_denied")  # type: ignore[arg-type]
 
-    if not state or not oauth_state or state != oauth_state or not _verify_state(state):
+    if not state or not _verify_state(state):
         return _frontend_redirect(None, error="invalid_state")  # type: ignore[arg-type]
 
     async with httpx.AsyncClient() as client:
@@ -258,7 +258,7 @@ async def github_callback(
         )
         profile = user_resp.json()
 
-        # GitHub may hide email — fall back to primary verified email
+        # GitHub may hide email â€” fall back to primary verified email
         email = profile.get("email")
         if not email:
             emails = email_resp.json()
@@ -284,4 +284,7 @@ async def github_callback(
     return response
 
 
-import asyncio  # noqa: E402 — placed at bottom to avoid circular hoisting issues
+import asyncio  # noqa: E402 â€” placed at bottom to avoid circular hoisting issues
+
+
+
