@@ -1,4 +1,4 @@
-"""File upload, secure download, and lifecycle endpoints."""
+﻿"""File upload, secure download, and lifecycle endpoints."""
 
 import base64
 import mimetypes
@@ -28,18 +28,34 @@ class UploadFromUrlRequest(BaseModel):
 
 def resolve_direct_cloud_url(raw_url: str) -> tuple[str, str]:
     """
-    Transforms Google Drive or Dropbox sharing links into direct stream download links.
+    Transforms Google Drive, Google Docs/Sheets/Slides, or Dropbox sharing links into direct PDF stream download links.
     Returns (download_url, fallback_filename).
     """
     url = raw_url.strip()
 
-    # 1. Google Drive Links
+    # 1. Google Docs, Sheets, Slides links -> export directly as PDF
+    gdoc_match = re.search(r'docs\.google\.com/document/d/([a-zA-Z0-9_-]+)', url)
+    if gdoc_match:
+        doc_id = gdoc_match.group(1)
+        return f"https://docs.google.com/document/d/{doc_id}/export?format=pdf", f"google_doc_{doc_id[:8]}.pdf"
+
+    gsheet_match = re.search(r'docs\.google\.com/spreadsheets/d/([a-zA-Z0-9_-]+)', url)
+    if gsheet_match:
+        sheet_id = gsheet_match.group(1)
+        return f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=pdf", f"google_sheet_{sheet_id[:8]}.pdf"
+
+    gslide_match = re.search(r'docs\.google\.com/presentation/d/([a-zA-Z0-9_-]+)', url)
+    if gslide_match:
+        slide_id = gslide_match.group(1)
+        return f"https://docs.google.com/presentation/d/{slide_id}/export/pdf", f"google_slides_{slide_id[:8]}.pdf"
+
+    # 2. Google Drive File Links (PDFs, Images, etc.)
     gdrive_match = re.search(r'(?:drive\.google\.com/file/d/|drive\.google\.com/open\?id=)([a-zA-Z0-9_-]+)', url)
     if gdrive_match:
         file_id = gdrive_match.group(1)
         return f"https://drive.google.com/uc?export=download&id={file_id}&confirm=t", f"gdrive_{file_id[:8]}.pdf"
 
-    # 2. Dropbox Links
+    # 3. Dropbox Links
     if "dropbox.com" in url:
         if "dl=0" in url:
             direct_url = url.replace("dl=0", "dl=1")
@@ -52,7 +68,7 @@ def resolve_direct_cloud_url(raw_url: str) -> tuple[str, str]:
         fallback_name = filename_match.group(1) if filename_match else "dropbox_document.pdf"
         return direct_url, fallback_name
 
-    # 3. Direct URL
+    # 4. Direct URL
     filename_match = re.search(r'/([^/?#]+\.[a-zA-Z0-9]+)(?:[?#]|$)', url)
     fallback_name = filename_match.group(1) if filename_match else "remote_document.pdf"
     return url, fallback_name
@@ -391,4 +407,5 @@ async def detect_forms_api(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Form detection error: {exc}",
         )
+
 
