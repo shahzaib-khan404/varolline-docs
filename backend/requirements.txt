@@ -74,3 +74,5 @@ pytest-cov==6.0.0
 httpx==0.28.1
 factory-boy==3.3.1
 faker==33.1.0
+
+aiosqlite>=0.20.0
