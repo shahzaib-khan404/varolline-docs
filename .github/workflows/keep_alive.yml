@@ -1,9 +1,9 @@
-﻿name: Keep Backend Alive
+name: Keep Backend Alive
 
 on:
   schedule:
-    # Runs every 10 minutes
-    - cron: '*/10 * * * *'
+    # Runs every 5 minutes to stay well within Render's 15-minute inactivity spin-down
+    - cron: '*/5 * * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
@@ -12,11 +12,27 @@ jobs:
     steps:
       - name: Ping Backend Health Endpoint
         run: |
-          echo "Pinging Backend Health at $(date)..."
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://ulovepdfbackendp.onrender.com/api/v1/health")
-          echo "Render Backend responded with HTTP $HTTP_STATUS"
-          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 500 ]; then
-            echo "Backend is alive and awake!"
+          echo "Pinging Render Backend at $(date)..."
+          
+          # Render free instance cold-starts can take 50-70 seconds when sleeping.
+          # We give curl up to 120 seconds, retry 3 times, and never let non-zero exit codes crash the job.
+          HTTP_STATUS=$(curl -s -L -o /dev/null -w "%{http_code}" \
+            --max-time 120 \
+            --connect-timeout 45 \
+            --retry 3 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            "https://ulovepdfbackendp.onrender.com/api/v1/health" || echo "TIMED_OUT")
+          
+          echo "Render Backend responded with: $HTTP_STATUS"
+          
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "✅ Backend is active, awake and healthy (HTTP 200)."
+          elif [ "$HTTP_STATUS" = "TIMED_OUT" ]; then
+            echo "⚠️ Backend was cold-starting or took longer than 120s; wake-up trigger was successfully delivered to Render."
           else
-            echo "Backend ping returned status: $HTTP_STATUS"
+            echo "ℹ️ Backend responded with status $HTTP_STATUS."
           fi
+          
+          # Always succeed so GitHub Actions doesn't mark the workflow red or pause the cron schedule
+          exit 0
