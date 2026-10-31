@@ -11,6 +11,7 @@ router = APIRouter()
 # In-memory visitor presence registry (clientId -> dict with timestamp, device, browser, ip)
 _active_visitors: dict[str, dict] = {}
 VISITOR_TTL_SECONDS = 45.0  # Visitors inactive for >45s are pruned
+MAX_VISITORS_LIMIT = 5000   # Hard memory ceiling against dictionary bloat
 
 
 def prune_and_get_visitors() -> list[dict]:
@@ -106,11 +107,20 @@ async def register_presence_ping(payload: PingRequest, request: Request):
     client_ip = request.client.host if request.client else "127.0.0.1"
     key = payload.client_id or f"anon_{client_ip}"
     
-    _active_visitors[key] = {
+    # Sanitize key length and content
+    safe_key = str(key)[:64]
+    if len(_active_visitors) >= MAX_VISITORS_LIMIT:
+        prune_and_get_visitors()
+        if len(_active_visitors) >= MAX_VISITORS_LIMIT:
+            # Drop the oldest entry to prevent memory exhaustion
+            oldest_key = min(_active_visitors, key=lambda k: _active_visitors[k].get("last_seen", 0))
+            _active_visitors.pop(oldest_key, None)
+
+    _active_visitors[safe_key] = {
         "last_seen": now,
-        "device": payload.device or "Desktop",
-        "browser": payload.browser or "Google Chrome",
-        "page": payload.page or "/",
+        "device": (payload.device or "Desktop")[:32],
+        "browser": (payload.browser or "Google Chrome")[:32],
+        "page": (payload.page or "/")[:128],
         "ip": client_ip,
     }
     return {"status": "ok", "active_online": get_active_visitor_count()}

@@ -8,7 +8,9 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import require_admin
 from app.core.database import get_db
+from app.models.user import User
 from app.schemas.ad_banner import AdBannerRead, AdBannerUpdate, AdSlotInfo
 from app.services.ad_service import AdService
 
@@ -18,10 +20,12 @@ router = APIRouter()
 @router.get("/slots", response_model=list[AdSlotInfo])
 async def list_all_ad_slots(
     db: Annotated[AsyncSession, Depends(get_db)],
+    admin_user: User = Depends(require_admin),
 ):
     """
     List all numbered banner slots (1-7) with their assignment details,
     media preview, and active status.
+    Protected: requires administrator privileges.
     """
     service = AdService(db)
     return await service.get_all_slots()
@@ -36,10 +40,12 @@ async def upload_slot_ad(
     badge_text: Optional[str] = Form(default="Featured"),
     is_active: bool = Form(default=True),
     db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(require_admin),
 ):
     """
     Upload an Image or Video creative and assign or replace the ad in the specified slot.
     If an ad already occupies this slot, it is seamlessly replaced with the new media.
+    Protected: requires administrator privileges.
     """
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="Media file is required.")
@@ -73,8 +79,12 @@ async def update_slot_ad(
     slot_number: int,
     update: AdBannerUpdate,
     db: Annotated[AsyncSession, Depends(get_db)],
+    admin_user: User = Depends(require_admin),
 ):
-    """Update settings (destination link, headline, active status) of an existing slot ad."""
+    """
+    Update settings (destination link, headline, active status) of an existing slot ad.
+    Protected: requires administrator privileges.
+    """
     service = AdService(db)
     try:
         return await service.update_ad(slot_number, update)
@@ -86,10 +96,12 @@ async def update_slot_ad(
 async def remove_slot_ad(
     slot_number: int,
     db: Annotated[AsyncSession, Depends(get_db)],
+    admin_user: User = Depends(require_admin),
 ):
     """
     Remove the ad from the numbered slot and destroy its media file.
     The slot becomes completely empty and collapses on the frontend.
+    Protected: requires administrator privileges.
     """
     service = AdService(db)
     removed = await service.remove_ad(slot_number)

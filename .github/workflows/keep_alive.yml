@@ -16,7 +16,7 @@ jobs:
           
           # Render free instance cold-starts can take 50-70 seconds when sleeping.
           # We give curl up to 120 seconds, retry 3 times, and never let non-zero exit codes crash the job.
-          HTTP_STATUS=$(curl -s -L -o /dev/null -w "%{http_code}" \
+          BACKEND_STATUS=$(curl -s -L -o /dev/null -w "%{http_code}" \
             --max-time 120 \
             --connect-timeout 45 \
             --retry 3 \
@@ -24,15 +24,22 @@ jobs:
             --retry-all-errors \
             "https://ulovepdfbackendp.onrender.com/api/v1/health" || echo "TIMED_OUT")
           
-          echo "Render Backend responded with: $HTTP_STATUS"
+          echo "Render Backend responded with: $BACKEND_STATUS"
           
-          if [ "$HTTP_STATUS" = "200" ]; then
+          if [ "$BACKEND_STATUS" = "200" ]; then
             echo "✅ Backend is active, awake and healthy (HTTP 200)."
-          elif [ "$HTTP_STATUS" = "TIMED_OUT" ]; then
+          elif [ "$BACKEND_STATUS" = "TIMED_OUT" ]; then
             echo "⚠️ Backend was cold-starting or took longer than 120s; wake-up trigger was successfully delivered to Render."
           else
-            echo "ℹ️ Backend responded with status $HTTP_STATUS."
+            echo "ℹ️ Backend responded with status $BACKEND_STATUS."
           fi
-          
-          # Always succeed so GitHub Actions doesn't mark the workflow red or pause the cron schedule
+
+      - name: Ping Frontend Root
+        run: |
+          echo "Pinging Render Frontend..."
+          FRONTEND_STATUS=$(curl -s -L -o /dev/null -w "%{http_code}" \
+            --max-time 45 \
+            --connect-timeout 20 \
+            "https://ulovepdf.onrender.com" || echo "FAILED")
+          echo "Frontend responded with: $FRONTEND_STATUS"
           exit 0

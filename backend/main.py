@@ -2,10 +2,12 @@
 
 import structlog
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.database import engine, Base
@@ -16,6 +18,7 @@ from app.core.middleware import (
     RequestIDMiddleware,
     RateLimitMiddleware,
 )
+from app.core.exceptions import AppException
 from app.api.v1.router import api_router
 import sentry_sdk
 
@@ -62,6 +65,40 @@ def create_application() -> FastAPI:
         openapi_url="/api/openapi.json" if settings.ENVIRONMENT != "production" else None,
         lifespan=lifespan,
     )
+
+    # ── Exception Handlers (safe JSON error output, no stack leaking) ──
+    @application.exception_handler(AppException)
+    async def app_exception_handler(request: Request, exc: AppException):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": {"code": exc.code, "message": exc.message}},
+        )
+
+    @application.exception_handler(StarletteHTTPException)
+    async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+        detail = exc.detail
+        code = "HTTP_ERROR"
+        message = str(detail)
+        if isinstance(detail, dict):
+            code = detail.get("code", code)
+            message = detail.get("message", message)
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": {"code": code, "message": message}},
+        )
+
+    @application.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception):
+        log.error("unhandled_server_error", path=request.url.path, error=str(exc), exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "detail": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "An unexpected error occurred. Please try again later.",
+                }
+            },
+        )
 
     # ── Middleware (order matters: outermost runs first) ──────────
     application.add_middleware(RequestIDMiddleware)

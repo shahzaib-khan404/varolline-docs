@@ -1,4 +1,4 @@
-﻿"""File upload, secure download, and lifecycle endpoints."""
+"""File upload, secure download, and lifecycle endpoints."""
 
 import base64
 import mimetypes
@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.core.security import verify_download_token
 from app.schemas.file import FileRead
 from app.services.file_service import FileService
+from app.utils.ssrf import safe_fetch_url
 
 router = APIRouter()
 
@@ -95,7 +96,7 @@ async def upload_from_url(
     current_user: OptionalUser = None,
     db: DB = None,
 ):
-    """Import and persist a PDF directly from Google Drive, Dropbox, or a web URL."""
+    """Import and persist a PDF directly from Google Drive, Dropbox, or a web URL with SSRF protection."""
     download_url, fallback_name = resolve_direct_cloud_url(body.url)
     target_filename = body.filename.strip() if body.filename else fallback_name
 
@@ -104,22 +105,21 @@ async def upload_from_url(
     }
 
     try:
-        async with httpx.AsyncClient(follow_redirects=True, timeout=60.0) as client:
-            resp = await client.get(download_url, headers=headers)
-            if resp.status_code != 200:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Failed to download file from cloud provider (HTTP {resp.status_code}). Please verify the link is accessible."
-                )
-            content = resp.content
+        content, resp_headers = await safe_fetch_url(
+            download_url,
+            headers=headers,
+            max_bytes=settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024,
+        )
 
-            # Extract real filename from Content-Disposition if present
-            cd = resp.headers.get("content-disposition", "")
-            if "filename=" in cd:
-                fname_match = re.search(r'filename\*?=(?:UTF-8\'\')?"?([^";]+)"?', cd)
-                if fname_match and not body.filename:
-                    target_filename = fname_match.group(1).strip()
-    except httpx.RequestError as exc:
+        # Extract real filename from Content-Disposition if present
+        cd = resp_headers.get("content-disposition", "")
+        if "filename=" in cd:
+            fname_match = re.search(r'filename\*?=(?:UTF-8\'\')?"?([^";]+)"?', cd)
+            if fname_match and not body.filename:
+                target_filename = fname_match.group(1).strip()
+    except HTTPException:
+        raise
+    except Exception as exc:
         raise HTTPException(
             status_code=400,
             detail=f"Could not connect to URL: {str(exc)}"

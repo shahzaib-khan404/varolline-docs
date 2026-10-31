@@ -15,7 +15,7 @@ services:
       - key: DATABASE_URL
         value: sqlite+aiosqlite:///./ulovepdf.db
       - key: ALLOWED_ORIGINS
-        value: "*"
+        value: "https://ulovepdf.onrender.com,http://localhost:3000"
       - key: MAX_UPLOAD_SIZE_MB
         value: 100
       - key: MAX_CONCURRENT_PDF_JOBS
@@ -34,6 +34,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NEXT_PUBLIC_APP_URL
+        value: "https://ulovepdf.onrender.com"
       - key: NEXT_PUBLIC_API_URL
         fromService:
           type: web

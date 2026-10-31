@@ -1,7 +1,8 @@
 """V1 API router — registers all feature routers."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.deps import require_admin
 from app.api.v1.endpoints import auth, users, files, jobs, health, dashboard, ads
 from app.api.v1.endpoints.admin import (
     ads as admin_ads,
@@ -20,8 +21,13 @@ api_router.include_router(files.router, prefix="/files", tags=["Files"])
 api_router.include_router(jobs.router, prefix="/jobs", tags=["Jobs"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 api_router.include_router(ads.router, prefix="/ads", tags=["Ads"])
-api_router.include_router(admin_ads.router, prefix="/admin/ads", tags=["Admin Ads"])
-api_router.include_router(admin_analytics.router, prefix="/admin/analytics", tags=["Admin Analytics"])
-api_router.include_router(admin_users.router, prefix="/admin/users", tags=["Admin Users"])
-api_router.include_router(admin_operations.router, prefix="/admin/operations", tags=["Admin Operations"])
-api_router.include_router(admin_tools.router, prefix="/admin/tools", tags=["Admin Tools"])
+
+# ── Admin Router (strictly protected by require_admin) ────────
+admin_router = APIRouter(prefix="/admin", dependencies=[Depends(require_admin)])
+admin_router.include_router(admin_ads.router, prefix="/ads", tags=["Admin Ads"])
+admin_router.include_router(admin_analytics.router, prefix="/analytics", tags=["Admin Analytics"])
+admin_router.include_router(admin_users.router, prefix="/users", tags=["Admin Users"])
+admin_router.include_router(admin_operations.router, prefix="/operations", tags=["Admin Operations"])
+admin_router.include_router(admin_tools.router, prefix="/tools", tags=["Admin Tools"])
+
+api_router.include_router(admin_router)

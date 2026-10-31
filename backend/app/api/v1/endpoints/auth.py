@@ -1,4 +1,4 @@
-﻿"""
+"""
 Authentication endpoints.
 - Email/password register, login, token refresh
 - Google OAuth 2.0 (authorization code flow)
@@ -19,7 +19,7 @@ from urllib.parse import urlencode
 
 import httpx
 import structlog
-from fastapi import APIRouter, Cookie, Request
+from fastapi import APIRouter, Cookie, Request, Response
 from fastapi.responses import RedirectResponse
 from jose import JWTError
 
@@ -80,17 +80,52 @@ async def register(data: UserCreate, db: DB):
 
 
 @router.post("/login", response_model=TokenPair)
-async def login(data: UserLogin, db: DB):
-    """Authenticate with email and password, returns JWT pair."""
+async def login(data: UserLogin, response: Response, db: DB):
+    """Authenticate with email and password, returns JWT pair and sets HttpOnly refresh cookie."""
     service = AuthService(db)
-    return await service.login(data)
+    tokens = await service.login(data)
+    response.set_cookie(
+        key="refresh_token",
+        value=tokens.refresh_token,
+        httponly=True,
+        secure=settings.is_production,
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400,
+        path="/api/v1/auth",
+    )
+    return tokens
 
 
 @router.post("/refresh", response_model=TokenPair)
-async def refresh_tokens(data: RefreshRequest, db: DB):
+async def refresh_tokens(
+    response: Response,
+    db: DB,
+    data: RefreshRequest | None = None,
+    refresh_token: str | None = Cookie(None),
+):
     """Exchange a valid refresh token for a new access + refresh pair."""
+    token_str = (data.refresh_token if data and data.refresh_token else None) or refresh_token
+    if not token_str:
+        raise UnauthorizedError("Refresh token missing.")
     service = AuthService(db)
-    return await service.refresh(data.refresh_token)
+    tokens = await service.refresh(token_str)
+    response.set_cookie(
+        key="refresh_token",
+        value=tokens.refresh_token,
+        httponly=True,
+        secure=settings.is_production,
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400,
+        path="/api/v1/auth",
+    )
+    return tokens
+
+
+@router.post("/logout")
+async def logout(response: Response):
+    """Log out user and clear HttpOnly refresh cookie."""
+    response.delete_cookie(key="refresh_token", path="/api/v1/auth")
+    return {"message": "Logged out successfully."}
 
 
 # â”€â”€ Google OAuth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

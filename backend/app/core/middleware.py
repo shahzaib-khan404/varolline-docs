@@ -79,6 +79,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     _PATH_LIMITS: dict[str, tuple[int, int]] = {
         "/api/v1/files/upload": (10, 60),   # 10 uploads / minute / IP
         "/api/v1/jobs":         (20, 60),   # 20 job creations / minute / IP
+        "/api/v1/health/ping":  (15, 60),   # 15 presence pings / minute / IP
     }
 
     def __init__(self, app):
@@ -103,7 +104,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return False, max_req - len(self._counts[bucket])
 
     async def dispatch(self, request: Request, call_next):
-        if request.url.path.endswith("/health"):
+        if request.url.path.rstrip("/") in ("/api/v1/health", "/health"):
             return await call_next(request)
 
         client_ip = self._get_client_ip(request)
