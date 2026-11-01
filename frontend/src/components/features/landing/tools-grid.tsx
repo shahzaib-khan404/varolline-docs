@@ -15,7 +15,7 @@ function ToolCard({ tool }: { tool: ToolConfig }) {
     >
       <Link
         href={tool.route}
-        className="group relative flex h-full flex-col justify-start rounded-none border border-border/80 bg-card/60 backdrop-blur-md p-5 sm:p-6 shadow-xs transition-colors duration-150 hover:border-primary hover:bg-card/90"
+        className="group relative flex h-full flex-col justify-start rounded-none border border-border/80 bg-white/70 dark:bg-card/60 backdrop-blur-md p-5 sm:p-6 shadow-xs transition-colors duration-150 hover:border-primary hover:bg-white/90 dark:hover:bg-card/90"
       >
         {/* Top Icon Badge */}
         <div className="mb-3.5">
@@ -56,12 +56,12 @@ export function ToolsGrid() {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 h-full w-full object-cover opacity-15 dark:opacity-20 transition-opacity duration-500"
+          className="absolute inset-0 h-full w-full object-cover opacity-80 dark:opacity-65 transition-opacity duration-500"
         >
           <source src="/videos/pdf-to-word.mp4" type="video/mp4" />
           <source src="/videos/PDF%20to%20word.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-background/90" />
+        <div className="absolute inset-0 bg-background/30 dark:bg-background/55" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
