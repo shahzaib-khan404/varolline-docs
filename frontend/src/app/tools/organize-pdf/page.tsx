@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { OrganizePdfClient } from "./organize-client";
 
 export const metadata: Metadata = {
-  title: "Organize PDF — Reorder, Rotate & Delete Pages | uLovepdf",
+  title: "Organize PDF — Reorder, Rotate & Delete Pages",
   description:
     "Organize and sort pages of your PDF file however you like. Reorder pages, remove unwanted pages, and rotate with precision.",
 };

@@ -3,7 +3,7 @@ import { ToolLayout } from "@/components/layouts/tool-layout";
 import { TOOL_BY_ID } from "@/config/tools";
 
 export const metadata: Metadata = {
-  title: "Image to PDF — Convert JPG/PNG to PDF | uLovepdf",
+  title: "Image to PDF — Convert JPG/PNG to PDF",
   description: "Convert one or more images into a single PDF document.",
 };
 

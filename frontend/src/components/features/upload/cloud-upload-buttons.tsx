@@ -40,7 +40,7 @@ export function CloudUploadButtons({
           <button
             type="button"
             onClick={(e) => handleOpenProvider("google_drive", e)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border/70 bg-secondary/30 hover:bg-secondary/60 text-xs font-medium text-foreground transition-all"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-none border border-border bg-card/60 backdrop-blur-md hover:bg-muted text-xs font-medium text-foreground transition-colors min-h-[36px]"
             title="Import PDF from Google Drive"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 87.3 78" fill="none">
@@ -57,7 +57,7 @@ export function CloudUploadButtons({
           <button
             type="button"
             onClick={(e) => handleOpenProvider("dropbox", e)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border/70 bg-secondary/30 hover:bg-secondary/60 text-xs font-medium text-foreground transition-all"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-none border border-border bg-card/60 backdrop-blur-md hover:bg-muted text-xs font-medium text-foreground transition-colors min-h-[36px]"
             title="Import PDF from Dropbox"
           >
             <svg className="h-3.5 w-3.5 fill-[#0061FF]" viewBox="0 0 24 24">
@@ -81,14 +81,14 @@ export function CloudUploadButtons({
 
   return (
     <>
-      <div className={`flex items-center justify-center gap-3 ${className}`}>
+      <div className={`flex flex-wrap items-center justify-center gap-2 sm:gap-3 ${className}`}>
         <span className="text-[11px] text-muted-foreground font-medium">Or import from:</span>
 
         {/* Google Drive Button */}
         <button
           type="button"
           onClick={(e) => handleOpenProvider("google_drive", e)}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 hover:bg-muted px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-all hover:scale-105"
+          className="inline-flex items-center gap-1.5 rounded-none border border-border/80 bg-card/60 backdrop-blur-md hover:bg-card/90 px-3 py-1.5 text-xs font-medium text-foreground shadow-xs transition-colors min-h-[36px]"
           title="Upload PDF from Google Drive"
         >
           <svg className="h-4 w-4" viewBox="0 0 87.3 78" fill="none">
@@ -106,7 +106,7 @@ export function CloudUploadButtons({
         <button
           type="button"
           onClick={(e) => handleOpenProvider("dropbox", e)}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 hover:bg-muted px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-all hover:scale-105"
+          className="inline-flex items-center gap-1.5 rounded-none border border-border/80 bg-card/60 backdrop-blur-md hover:bg-card/90 px-3 py-1.5 text-xs font-medium text-foreground shadow-xs transition-colors min-h-[36px]"
           title="Upload PDF from Dropbox"
         >
           <svg className="h-4 w-4 fill-[#0061FF]" viewBox="0 0 24 24">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SplitPdfClient } from "./split-client";
 
 export const metadata: Metadata = {
-  title: "Split PDF — Extract Pages Online | uLovepdf",
+  title: "Split PDF — Extract Pages Online",
   description:
     "Split a PDF into individual pages, custom page ranges, or equal chunks. Free and fast.",
 };

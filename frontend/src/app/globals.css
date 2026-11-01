@@ -17,7 +17,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Primary — Electric Sky / Ice Blue */
+    /* Primary — Solid brand blue */
     --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
 
@@ -38,7 +38,7 @@
     --input: 214 32% 91%;
     --ring: 199 89% 48%;
 
-    --radius: 0.85rem;
+    --radius: 0rem;
   }
 
   .dark {
@@ -50,7 +50,7 @@
     --popover: 222 47% 8%;
     --popover-foreground: 210 40% 98%;
 
-    /* Electric Ice Cyan */
+    /* Solid Electric Blue */
     --primary: 199 92% 56%;
     --primary-foreground: 222 47% 5%;
 
@@ -102,72 +102,67 @@
 }
 
 @layer utilities {
-  /* Gradient text with high contrast for both light and dark mode */
+  /* Solid high-contrast text — NO gradients */
   .gradient-text {
-    @apply bg-gradient-to-r from-sky-600 via-blue-600 to-cyan-700 dark:from-sky-300 dark:via-cyan-300 dark:to-blue-400 bg-clip-text text-transparent;
+    @apply text-sky-600 dark:text-sky-400 font-semibold;
   }
 
   .gradient-ice {
-    @apply bg-gradient-to-r from-sky-600 via-cyan-600 to-teal-600 dark:from-sky-300 dark:via-cyan-200 dark:to-teal-300 bg-clip-text text-transparent;
+    @apply text-sky-600 dark:text-sky-400 font-semibold;
   }
 
   .gradient-text-subtle {
-    @apply bg-gradient-to-r from-foreground via-foreground/95 to-foreground/80 bg-clip-text text-transparent;
+    @apply text-foreground font-medium;
   }
 
-  /* Glass morphism — Timothy Ricks style */
+  /* Glass morphism — Clean, sharp, frosted glass */
   .glass {
-    @apply backdrop-blur-md bg-white/10 border border-white/20;
+    @apply backdrop-blur-md bg-white/10 dark:bg-black/25 border border-white/15 dark:border-white/10;
   }
 
   .glass-ultra {
-    backdrop-filter: blur(2em);
-    -webkit-backdrop-filter: blur(2em);
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 
   .dark .glass-ultra {
-    backdrop-filter: blur(2em);
-    -webkit-backdrop-filter: blur(2em);
-    background: rgba(15, 23, 42, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   }
 
   .glass-shine {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.3) 0%,
-      transparent 55%,
-      rgba(255, 255, 255, 0.05) 100%
-    );
+    display: none;
   }
 
   .glass-premium {
-    @apply backdrop-blur-2xl bg-white/70 dark:bg-card/40 border border-sky-500/10 dark:border-white/10 shadow-2xl;
+    @apply backdrop-blur-xl bg-white/60 dark:bg-card/50 border border-border shadow-xs;
   }
 
   .glass-card {
-    @apply backdrop-blur-xl bg-card/60 border border-border/60 hover:border-sky-500/40 shadow-sm transition-all duration-300;
+    @apply backdrop-blur-xl bg-white/50 dark:bg-card/50 border border-border/70 hover:border-primary/50 shadow-xs transition-colors duration-150;
   }
 
   .glow-primary {
-    box-shadow: 0 0 50px -10px rgba(14, 165, 233, 0.4);
+    box-shadow: none;
   }
 
   .glow-ice-blue {
-    box-shadow: 0 0 45px -8px rgba(56, 189, 248, 0.45);
+    box-shadow: none;
   }
 
   .glow-badge {
-    box-shadow: 0 0 20px -2px rgba(14, 165, 233, 0.4);
+    box-shadow: none;
   }
 
   /* Skeleton */
   .skeleton {
-    @apply animate-pulse rounded-md bg-muted;
+    @apply animate-pulse rounded-none bg-muted;
   }
 
   /* Shimmer */

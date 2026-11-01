@@ -26,7 +26,7 @@ export default function HomePage() {
 
         {/* Slot #5: Post-Hero Marketing Banner */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AdBannerSlot slotNumber={5} className="my-8" />
+          <AdBannerSlot slotNumber={5} className="my-6" />
         </div>
 
         <StatsSection />
@@ -34,7 +34,7 @@ export default function HomePage() {
 
         {/* Slot #6: Mid-Page Marketing Banner */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AdBannerSlot slotNumber={6} className="my-10" />
+          <AdBannerSlot slotNumber={6} className="my-8" />
         </div>
 
         <HowItWorks />
@@ -44,7 +44,7 @@ export default function HomePage() {
 
         {/* Slot #7: Pre-Footer Marketing Banner */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AdBannerSlot slotNumber={7} className="my-10" />
+          <AdBannerSlot slotNumber={7} className="my-8" />
         </div>
 
         <CTASection />

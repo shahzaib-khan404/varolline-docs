@@ -23,17 +23,7 @@ export interface JobPayload {
 export interface ToolLayoutProps {
   tool: ToolConfig;
   children?: React.ReactNode | ((upload: ReturnType<typeof useUpload>) => React.ReactNode);
-  /**
-   * When true, collects all uploaded files as:
-   *   input_file_id = files[0].id
-   *   options.additional_file_ids = [files[1].id, ...]
-   */
   multiFile?: boolean;
-  /**
-   * Override the full job payload at submit time.
-   * Only safe to pass from other CLIENT components — not across the RSC boundary.
-   * Takes precedence over `multiFile`.
-   */
   getJobOptions?: (files: FileRead[]) => JobPayload;
   actionLabel?: React.ReactNode;
   actionClassName?: string;
@@ -102,13 +92,13 @@ export function ToolLayout({
     !upload.items.every((it) => it.status === "uploading");
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Slot #3: Top Leaderboard (Up) */}
-      <AdBannerSlot slotNumber={3} className="mb-8" />
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      {/* Top Leaderboard */}
+      <AdBannerSlot slotNumber={3} className="mb-6" />
 
-      {/* Main 3-Column Layout: Left Ad #1 | Center Tool Workspace | Right Ad #2 */}
+      {/* Main 3-Column Layout */}
       <div className="flex justify-center items-start gap-6 xl:gap-8 w-full">
-        {/* Slot #1: Left Skyscraper (Left) */}
+        {/* Left Skyscraper */}
         <AdBannerSlot
           slotNumber={1}
           orientation="vertical"
@@ -120,109 +110,112 @@ export function ToolLayout({
           {/* Back link */}
           <Link
             href="/tools"
-            className="mb-6 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             All tools
           </Link>
 
           {/* Heading */}
-          <div className="mb-6">
+          <div className="mb-5">
             <div className="flex items-center gap-3">
               <span
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tool.color}`}
+                className={cn(
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-none text-white",
+                  tool.color
+                )}
               >
-                <ToolIcon name={tool.icon} className="h-5 w-5 text-white" />
+                <ToolIcon name={tool.icon} className="h-4 w-4 text-white" />
               </span>
               <div>
-                <h1 className="text-xl font-bold tracking-tight">{tool.name}</h1>
-                <p className="text-sm text-muted-foreground">{tool.description}</p>
+                <h1 className="text-xl font-bold tracking-tight text-foreground">{tool.name}</h1>
+                <p className="text-xs text-muted-foreground">{tool.description}</p>
               </div>
             </div>
           </div>
 
-      <AnimatePresence mode="wait">
-        {jobId ? (
-          <motion.div
-            key="result"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <JobResult jobId={jobId} toolName={tool.name} onReset={handleReset} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="upload"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="space-y-4"
-          >
-            {/* Upload zone */}
-            <UploadZone tool={tool} {...upload} />
-
-            {/* Tool-specific options — shown after files are selected */}
-            <AnimatePresence>
-              {children && upload.items.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden rounded-xl border bg-card p-4"
-                >
-                  {typeof children === "function" ? children(upload) : children}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Server error */}
-            <AnimatePresence>
-              {serverError && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm text-destructive"
-                >
-                  {serverError}
-                </motion.p>
-              )}
-            </AnimatePresence>
-
-            {/* Action area */}
-            {upload.items.length > 0 && (
+          <AnimatePresence mode="wait">
+            {jobId ? (
               <motion.div
+                key="result"
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
+                exit={{ opacity: 0 }}
               >
-                <Button
-                    size="lg"
-                    className={cn("w-full", actionClassName)}
-                    disabled={!canProcess}
-                    onClick={handleProcess}
+                <JobResult jobId={jobId} toolName={tool.name} onReset={handleReset} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="upload"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-3"
+              >
+                {/* Upload zone */}
+                <UploadZone tool={tool} {...upload} />
+
+                {/* Tool-specific options — shown after files are selected */}
+                <AnimatePresence>
+                  {children && upload.items.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden rounded-none border border-border bg-card/60 backdrop-blur-md p-4"
+                    >
+                      {typeof children === "function" ? children(upload) : children}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Server error */}
+                <AnimatePresence>
+                  {serverError && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="rounded-none border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-xs text-destructive font-medium"
+                    >
+                      {serverError}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+
+                {/* Action area */}
+                {upload.items.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
                   >
-                    {processing || upload.isUploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {upload.isUploading ? "Uploading…" : "Starting…"}
-                      </>
-                    ) : (
-                      actionLabel ?? tool.name
-                    )}
-                  </Button>
+                    <Button
+                      size="lg"
+                      className={cn("w-full rounded-none bg-sky-600 hover:bg-sky-700 text-white min-h-[44px]", actionClassName)}
+                      disabled={!canProcess}
+                      onClick={handleProcess}
+                    >
+                      {processing || upload.isUploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {upload.isUploading ? "Uploading…" : "Starting…"}
+                        </>
+                      ) : (
+                        actionLabel ?? tool.name
+                      )}
+                    </Button>
+                  </motion.div>
+                )}
               </motion.div>
             )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </AnimatePresence>
 
-          {/* Slot #4: Bottom Anchor (Down) */}
-          <AdBannerSlot slotNumber={4} className="mt-8" />
+          {/* Bottom Ad */}
+          <AdBannerSlot slotNumber={4} className="mt-6" />
         </div>
 
-        {/* Slot #2: Right Skyscraper (Right) */}
+        {/* Right Skyscraper */}
         <AdBannerSlot
           slotNumber={2}
           orientation="vertical"
@@ -232,4 +225,3 @@ export function ToolLayout({
     </div>
   );
 }
-

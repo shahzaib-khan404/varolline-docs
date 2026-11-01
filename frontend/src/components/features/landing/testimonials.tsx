@@ -61,20 +61,11 @@ const TESTIMONIALS = [
   },
 ];
 
-const AVATAR_COLORS = [
-  "bg-blue-500",
-  "bg-violet-500",
-  "bg-emerald-500",
-  "bg-amber-500",
-  "bg-rose-500",
-  "bg-teal-500",
-];
-
 function Stars({ count }: { count: number }) {
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: count }).map((_, i) => (
-        <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+        <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
       ))}
     </div>
   );
@@ -84,28 +75,28 @@ const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.05, delayChildren: 0.05 },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { ease: "easeOut", duration: 0.5 } },
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { ease: "easeOut", duration: 0.3 } },
 };
 
 export function Testimonials() {
   return (
-    <section className="bg-muted/30 py-24">
+    <section className="bg-muted/20 py-20 border-t border-border/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary">
+          <p className="text-xs font-bold uppercase tracking-widest text-primary">
             Testimonials
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
             Loved by teams and individuals
           </h2>
-          <p className="mt-4 text-muted-foreground">
+          <p className="mt-3 text-sm text-muted-foreground">
             Join 200,000+ people who trust uLovepdf for their daily
             document workflows.
           </p>
@@ -116,31 +107,28 @@ export function Testimonials() {
           variants={containerVariants}
           initial="hidden"
           whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          viewport={{ once: true, margin: "-40px" }}
+          className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {TESTIMONIALS.map((t, i) => (
+          {TESTIMONIALS.map((t) => (
             <motion.div
               key={t.name}
               variants={cardVariants}
-              className="flex flex-col gap-4 rounded-xl border bg-card p-6 shadow-sm"
+              className="flex flex-col gap-3 rounded-none border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-xs"
             >
               <Stars count={t.rating} />
-              <blockquote className="flex-1 text-sm leading-relaxed text-muted-foreground">
+              <blockquote className="flex-1 text-xs leading-relaxed text-muted-foreground">
                 &ldquo;{t.quote}&rdquo;
               </blockquote>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5 pt-2 border-t border-border/40">
                 <span
-                  className={cn(
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
-                    AVATAR_COLORS[i % AVATAR_COLORS.length]
-                  )}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none text-xs font-bold bg-sky-600 text-white"
                 >
                   {t.avatar}
                 </span>
                 <div>
-                  <p className="text-sm font-semibold">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs font-semibold text-foreground">{t.name}</p>
+                  <p className="text-[11px] text-muted-foreground">
                     {t.role}
                     {t.company && ` · ${t.company}`}
                   </p>

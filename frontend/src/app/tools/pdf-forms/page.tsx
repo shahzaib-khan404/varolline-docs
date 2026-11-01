@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PdfFormsClient } from "./forms-client";
 
 export const metadata: Metadata = {
-  title: "PDF Forms — Fill Out & Flatten Interactive AcroForms Online | uLovepdf",
+  title: "PDF Forms — Fill Out & Flatten Interactive AcroForms Online",
   description:
     "Fill interactive PDF forms, text inputs, checkboxes, and radio buttons online. Flatten forms into permanent, un-editable documents for distribution.",
 };

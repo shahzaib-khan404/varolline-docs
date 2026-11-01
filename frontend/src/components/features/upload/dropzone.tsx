@@ -91,21 +91,21 @@ export function Dropzone({ tool, hasFiles, onDrop }: DropzoneProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
       {...(getRootProps() as any)}
       className={`
-        relative flex min-h-[220px] cursor-pointer flex-col items-center justify-center
-        rounded-2xl border-2 border-dashed p-8 text-center outline-none
-        transition-all duration-200 select-none
+        relative flex cursor-pointer flex-col items-center justify-center
+        rounded-none border border-dashed text-center outline-none select-none transition-colors
+        ${hasFiles ? "min-h-[140px] p-5" : "min-h-[200px] p-7"}
         ${isDragReject
           ? "border-destructive bg-destructive/5"
           : isDragActive
-          ? "border-primary bg-primary/5 shadow-sm"
+          ? "border-primary bg-primary/5"
           : hasFiles
-          ? "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
-          : "border-border bg-card hover:border-primary/50 hover:bg-muted/30"
+          ? "border-border/80 bg-card/60 backdrop-blur-md hover:border-primary/60 hover:bg-card/90"
+          : "border-border/80 bg-card/60 backdrop-blur-md hover:border-primary/60 hover:bg-card/90"
         }
       `}
     >
@@ -115,15 +115,15 @@ export function Dropzone({ tool, hasFiles, onDrop }: DropzoneProps) {
         {isDragActive && !isDragReject ? (
           <motion.div
             key="drag-active"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-3"
+            className="flex flex-col items-center gap-2"
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-              <Upload className="h-7 w-7 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-none bg-sky-500/10 text-sky-600 dark:text-sky-400">
+              <Upload className="h-5 w-5" />
             </div>
-            <p className="text-sm font-medium text-primary">Drop files here</p>
+            <p className="text-xs font-semibold text-primary">Drop files here</p>
           </motion.div>
         ) : isDragReject ? (
           <motion.div
@@ -131,12 +131,12 @@ export function Dropzone({ tool, hasFiles, onDrop }: DropzoneProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-3"
+            className="flex flex-col items-center gap-2"
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
-              <Upload className="h-7 w-7 text-destructive" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-none bg-destructive/10 text-destructive">
+              <Upload className="h-5 w-5" />
             </div>
-            <p className="text-sm font-medium text-destructive">Invalid file type</p>
+            <p className="text-xs font-semibold text-destructive">Invalid file type</p>
           </motion.div>
         ) : hasFiles ? (
           <motion.div
@@ -144,12 +144,12 @@ export function Dropzone({ tool, hasFiles, onDrop }: DropzoneProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-2"
+            className="flex flex-col items-center gap-1.5"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/40 text-muted-foreground">
-              <Plus className="h-5 w-5" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-none border border-dashed border-border text-muted-foreground">
+              <Plus className="h-4 w-4" />
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               {tool.maxFiles > 1 ? "Add more files" : "Replace file"}
             </p>
           </motion.div>
@@ -159,30 +159,30 @@ export function Dropzone({ tool, hasFiles, onDrop }: DropzoneProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-4"
+            className="flex flex-col items-center gap-3"
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-              <Upload className={`h-8 w-8 ${tool.textColor}`} />
+            <div className="flex h-12 w-12 items-center justify-center rounded-none bg-muted border border-border">
+              <Upload className="h-6 w-6 text-foreground" />
             </div>
             <div>
-              <p className="text-sm font-semibold">
+              <p className="text-sm font-semibold text-foreground">
                 Drag & drop {tool.maxFiles > 1 ? "files" : "a file"} here
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                or <span className="font-medium text-primary underline-offset-2 hover:underline">click to browse</span>
+                or <span className="font-semibold text-primary hover:underline">click to browse</span>
               </p>
             </div>
-            <div className="mt-1 flex flex-wrap justify-center gap-1.5">
+            <div className="mt-0.5 flex flex-wrap justify-center gap-1.5">
               {tool.acceptedTypes.map((t) => (
-                <span key={t} className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                <span key={t} className="rounded-none bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground uppercase">
                   {formatMimes([t])}
                 </span>
               ))}
-              <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span className="rounded-none bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                 Max 100 MB
               </span>
               {tool.maxFiles > 1 && (
-                <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <span className="rounded-none bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                   Up to {tool.maxFiles} files
                 </span>
               )}

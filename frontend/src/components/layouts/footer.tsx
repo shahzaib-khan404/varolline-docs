@@ -29,18 +29,18 @@ const FOOTER_LINKS = {
 
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/30">
+    <footer className="border-t border-border/80 bg-card/60 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Top row */}
         <div className="grid grid-cols-2 gap-8 md:grid-cols-6">
           {/* Brand */}
           <div className="col-span-2">
             <Link href="/" className="flex items-center gap-2.5 font-bold tracking-tight group">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 via-cyan-500 to-blue-600 text-white shadow-md shadow-sky-500/30 group-hover:scale-105 transition-transform">
+              <div className="flex h-8 w-8 items-center justify-center rounded-none bg-sky-600 text-white transition-opacity group-hover:opacity-90">
                 <FileText className="h-4 w-4 text-white" />
               </div>
-              <span className="text-sm font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors">
-                uLove<span className="gradient-text font-black">pdf</span>
+              <span className="text-sm font-extrabold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                uLove<span className="text-sky-600 dark:text-sky-400">pdf</span>
               </span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
@@ -52,7 +52,7 @@ export function Footer() {
                 href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="flex h-8 w-8 items-center justify-center rounded-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground border border-border"
                 aria-label="GitHub"
               >
                 <Github className="h-4 w-4" />
@@ -61,7 +61,7 @@ export function Footer() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="flex h-8 w-8 items-center justify-center rounded-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground border border-border"
                 aria-label="Twitter"
               >
                 <Twitter className="h-4 w-4" />
@@ -99,9 +99,8 @@ export function Footer() {
             © {new Date().getFullYear()} uLovepdf. Open source under MIT
             license.
           </p>
-          <p className="text-sm text-muted-foreground">
-            Built with{" "}
-            <span className="text-foreground">Next.js 15 + FastAPI</span>
+          <p className="text-xs text-muted-foreground">
+            Fast, secure, private. Files deleted automatically after 24h.
           </p>
         </div>
       </div>

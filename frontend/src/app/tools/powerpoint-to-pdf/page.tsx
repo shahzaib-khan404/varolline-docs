@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PowerPointToPdfClient } from "./powerpoint-client";
 
 export const metadata: Metadata = {
-  title: "PowerPoint to PDF — Convert PPT & PPTX to PDF Online | uLovepdf",
+  title: "PowerPoint to PDF — Convert PPT & PPTX to PDF Online",
   description:
     "Convert your PowerPoint presentations (PPT, PPTX) to high-quality PDF slides with vector clarity, intact fonts, and perfect layout alignment.",
 };

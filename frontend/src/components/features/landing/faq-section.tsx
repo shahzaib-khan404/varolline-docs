@@ -45,27 +45,27 @@ const FAQS = [
 
 export function FAQSection() {
   return (
-    <section className="border-t py-24">
+    <section className="border-t border-border/40 py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-5xl gap-12 md:grid-cols-[280px_1fr]">
-          {/* Left sticky header */}
+        <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-[260px_1fr]">
+          {/* Left header */}
           <motion.div
-            initial={{ opacity: 0, x: -16 }}
+            initial={{ opacity: 0, x: -12 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
+            transition={{ duration: 0.35 }}
             className="md:sticky md:top-24 md:self-start"
           >
-            <p className="text-sm font-semibold uppercase tracking-widest text-primary">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">
               FAQ
             </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight">
+            <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
               Common questions
             </h2>
-            <p className="mt-3 text-sm text-muted-foreground">
+            <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed">
               Can&apos;t find the answer you&apos;re looking for?{" "}
-              <a href="/contact" className="text-primary underline underline-offset-4">
-                Contact us
+              <a href="/about" className="text-primary underline underline-offset-4">
+                Learn more about us
               </a>
               .
             </p>
@@ -73,18 +73,18 @@ export function FAQSection() {
 
           {/* Right — accordion */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.1 }}
+            transition={{ duration: 0.35, delay: 0.05 }}
           >
             <Accordion type="single" collapsible className="w-full">
               {FAQS.map((faq, i) => (
-                <AccordionItem key={i} value={`item-${i}`}>
-                  <AccordionTrigger className="text-left text-sm font-medium">
+                <AccordionItem key={i} value={`item-${i}`} className="border-border">
+                  <AccordionTrigger className="text-left text-sm font-semibold hover:no-underline">
                     {faq.q}
                   </AccordionTrigger>
-                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                  <AccordionContent className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                     {faq.a}
                   </AccordionContent>
                 </AccordionItem>

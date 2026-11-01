@@ -3,7 +3,7 @@ import { ToolLayout } from "@/components/layouts/tool-layout";
 import { TOOL_BY_ID } from "@/config/tools";
 
 export const metadata: Metadata = {
-  title: "Merge PDF — Combine PDF Files Online | uLovepdf",
+  title: "Merge PDF — Combine PDF Files Online",
   description:
     "Merge multiple PDF files into one document for free. No signup required to try.",
 };
