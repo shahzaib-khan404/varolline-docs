@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils/cn";
-import { TOOL_CATEGORIES } from "@/config/tools";
+import { TOOL_CATEGORIES, TOOLS } from "@/config/tools";
 import { useAuthStore } from "@/store/auth-store";
 import { authApi } from "@/lib/api/auth";
 import { useCurrentUser } from "@/hooks/use-auth";
@@ -28,6 +28,13 @@ import { useCurrentUser } from "@/hooks/use-auth";
 const NAV_LINKS = [
   { label: "Features", href: "/#features" },
   { label: "About", href: "/about" },
+];
+
+const CATEGORY_META = [
+  { id: "pdf", label: "PDF Tools", tools: TOOL_CATEGORIES.pdf },
+  { id: "convert", label: "Convert", tools: TOOL_CATEGORIES.convert },
+  { id: "organize", label: "Organize & Edit", tools: TOOL_CATEGORIES.organize },
+  { id: "protect", label: "Security", tools: TOOL_CATEGORIES.protect },
 ];
 
 export function Navbar() {
@@ -113,7 +120,7 @@ export function Navbar() {
                   onMouseLeave={() => setToolsOpen(false)}
                 >
                   <div className="grid grid-cols-4 gap-6">
-                    {TOOL_CATEGORIES.map((cat) => (
+                    {CATEGORY_META.map((cat) => (
                       <div key={cat.id}>
                         <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                           {cat.label}
@@ -249,7 +256,7 @@ export function Navbar() {
                 All Tools
               </p>
               <div className="grid grid-cols-2 gap-1.5">
-                {TOOL_CATEGORIES.flatMap((c) => c.tools).map((tool) => (
+                {TOOLS.map((tool) => (
                   <Link
                     key={tool.id}
                     href={tool.route}
