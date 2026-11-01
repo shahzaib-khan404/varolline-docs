@@ -20,7 +20,7 @@ export function AmbientVideoBackground({
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 h-full w-full object-cover opacity-65 dark:opacity-35 transition-opacity duration-500"
+          className="absolute inset-0 h-full w-full object-cover opacity-85 dark:opacity-70 transition-opacity duration-500"
         >
           <source src="/videos/overall-video.mp4" type="video/mp4" />
           <source src="/videos/overall%20video%20.mp4" type="video/mp4" />
@@ -28,10 +28,10 @@ export function AmbientVideoBackground({
       </div>
 
       {/* Cyber Tech Grid Overlay */}
-      <div className="bg-grid-pattern absolute inset-0 z-10 opacity-30 dark:opacity-[0.08]" />
+      <div className="bg-grid-pattern absolute inset-0 z-10 opacity-40 dark:opacity-20" />
 
-      {/* Solid non-gradient high-contrast dark overlay to eliminate glare under text on mobile and desktop */}
-      <div className="absolute inset-0 z-20 bg-background/45 dark:bg-background/90" />
+      {/* Subtle overlay that lets video motion & details pop while keeping text crisp */}
+      <div className="absolute inset-0 z-20 bg-background/25 dark:bg-background/45" />
     </div>
   );
 }

@@ -51,12 +51,12 @@ export function HowItWorks() {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 h-full w-full object-cover opacity-15 dark:opacity-20 transition-opacity duration-500"
+          className="absolute inset-0 h-full w-full object-cover opacity-75 dark:opacity-60 transition-opacity duration-500"
         >
           <source src="/videos/ocr-watermark.mp4" type="video/mp4" />
           <source src="/videos/OCR&watermark.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-background/90" />
+        <div className="absolute inset-0 bg-background/35 dark:bg-background/60" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

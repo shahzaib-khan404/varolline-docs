@@ -30,14 +30,14 @@ export default function AuthLayout({
           <img
             src="/images/signin.jpg"
             alt="uLovepdf Security & Processing"
-            className="absolute inset-0 h-full w-full object-cover opacity-20 dark:opacity-25 transition-opacity duration-500 scale-[1.01]"
+            className="absolute inset-0 h-full w-full object-cover opacity-70 dark:opacity-55 transition-opacity duration-500 scale-[1.01]"
           />
 
           {/* Cyber Tech Grid Overlay */}
-          <div className="bg-grid-pattern absolute inset-0 opacity-[0.1] dark:opacity-[0.05]" />
+          <div className="bg-grid-pattern absolute inset-0 opacity-30 dark:opacity-15" />
 
           {/* Solid Readability Overlay */}
-          <div className="absolute inset-0 bg-background/85 dark:bg-background/90" />
+          <div className="absolute inset-0 bg-background/40 dark:bg-background/65" />
         </div>
 
         {/* Logo */}
