@@ -7,8 +7,7 @@ import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText, Sun, Moon, Menu, X, ChevronDown,
-  LayoutDashboard, LogOut, User, ShieldCheck,
-  Settings, History,
+  LogOut, User, ShieldCheck, Settings, History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToolIcon } from "@/components/ui/tool-icon";
